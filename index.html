@@ -66,13 +66,9 @@
             background: var(--cream);
         }
 
-        /* Animated background pattern */
         .bg-pattern {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            inset: 0;
             opacity: 0.03;
             background-image:
                 repeating-linear-gradient(45deg, var(--burgundy) 0px, var(--burgundy) 1px, transparent 1px, transparent 20px),
@@ -86,7 +82,6 @@
             z-index: 1;
         }
 
-        /* Header */
         .app-header {
             background: linear-gradient(135deg, var(--burgundy), var(--deep-wine));
             color: var(--cream);
@@ -104,7 +99,6 @@
             gap: 0.5rem;
         }
 
-        /* Buttons */
         .btn {
             padding: 0.75rem 1.5rem;
             border: none;
@@ -147,7 +141,6 @@
             text-decoration: underline;
         }
 
-        /* Form elements */
         .form-group {
             margin-bottom: 1.5rem;
         }
@@ -187,7 +180,6 @@
             min-height: 100px;
         }
 
-        /* Mood slider */
         .mood-slider {
             -webkit-appearance: none;
             width: 100%;
@@ -223,7 +215,6 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
 
-        /* Mood tags */
         .mood-tags {
             display: flex;
             flex-wrap: wrap;
@@ -257,7 +248,6 @@
             border-color: var(--burgundy);
         }
 
-        /* Book card */
         .book-card {
             background: white;
             border-radius: 12px;
@@ -287,7 +277,6 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
 
-        /* Loading states */
         .loading {
             text-align: center;
             padding: 3rem 1rem;
@@ -319,7 +308,6 @@
             }
         }
 
-        /* Progress bar */
         .progress-bar {
             width: 100%;
             height: 6px;
@@ -335,7 +323,6 @@
             transition: width 0.3s ease;
         }
 
-        /* Audio player */
         .audio-player {
             background: white;
             border-radius: 12px;
@@ -348,7 +335,6 @@
             background: var(--parchment);
         }
 
-        /* Modal */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -393,7 +379,6 @@
             background: var(--parchment);
         }
 
-        /* Navigation */
         .nav-bar {
             position: sticky;
             bottom: 0;
@@ -428,14 +413,8 @@
             color: var(--burgundy);
         }
 
-        /* Utility classes */
-        .hidden {
-            display: none !important;
-        }
-
-        .text-center {
-            text-align: center;
-        }
+        .hidden { display: none !important; }
+        .text-center { text-align: center; }
 
         .mt-1 { margin-top: 0.5rem; }
         .mt-2 { margin-top: 1rem; }
@@ -450,7 +429,6 @@
         .p-3 { padding: 1.5rem; }
         .p-4 { padding: 2rem; }
 
-        /* Markdown styling in summaries */
         .summary-content h1, .summary-content h2, .summary-content h3 {
             margin-top: 1.5rem;
             margin-bottom: 0.75rem;
@@ -481,7 +459,6 @@
             font-family: monospace;
         }
 
-        /* Checkbox groups */
         .checkbox-group {
             display: flex;
             flex-direction: column;
@@ -501,7 +478,6 @@
             accent-color: var(--burgundy);
         }
 
-        /* Disclaimer */
         .disclaimer {
             background: linear-gradient(135deg, rgba(107, 39, 55, 0.1), rgba(74, 31, 41, 0.1));
             border-left: 4px solid var(--burgundy);
@@ -520,7 +496,6 @@
     <div class="bg-pattern"></div>
     <div class="app-container">
         <div class="content">
-            <!-- Header -->
             <header class="app-header" id="appHeader">
                 <div class="logo">
                     <span>📚</span>
@@ -529,12 +504,10 @@
                 <p style="font-size: 0.9rem; margin-top: 0.25rem; opacity: 0.9;">Your mood-based reading companion</p>
             </header>
 
-            <!-- Main content area -->
             <main id="mainContent" style="padding: 1.5rem; min-height: calc(100vh - 200px);">
-                <!-- Content will be injected here -->
+                <!-- Content injected by JS -->
             </main>
 
-            <!-- Navigation bar -->
             <nav class="nav-bar" id="navBar" style="display: none;">
                 <div class="nav-item" data-view="check-in">
                     <span style="font-size: 1.5rem;">🌙</span>
@@ -557,7 +530,10 @@
     </div>
 
     <script>
-        // Initialize dark mode detection
+        // === CONFIG: point to your Render backend ===
+        const BACKEND_BASE_URL = "https://moodshelf-backend.onrender.com";
+
+        // Dark mode detection
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
             document.documentElement.classList.add('dark');
         }
@@ -569,10 +545,9 @@
             }
         });
 
-        // Storage abstraction for iframe / simple environment (in-memory)
+        // Simple in-memory storage (kept to match your current behavior)
         const Storage = {
             data: {},
-
             init() {
                 this.data = {
                     user: null,
@@ -580,19 +555,15 @@
                     moodHistory: []
                 };
             },
-
             getItem(key) {
                 return this.data[key] ? JSON.stringify(this.data[key]) : null;
             },
-
             setItem(key, value) {
                 this.data[key] = JSON.parse(value);
             },
-
             removeItem(key) {
                 delete this.data[key];
             },
-
             clear() {
                 this.data = {
                     user: null,
@@ -601,11 +572,8 @@
                 };
             }
         };
-
-        // Initialize storage
         Storage.init();
 
-        // State management
         const AppState = {
             user: null,
             currentView: 'welcome',
@@ -665,12 +633,10 @@
             }
         };
 
-        // Router
         const Router = {
             navigate(view, data = {}) {
                 AppState.currentView = view;
 
-                // Update navigation active state
                 document.querySelectorAll('.nav-item').forEach(item => {
                     item.classList.remove('active');
                     if (item.dataset.view === view) {
@@ -678,7 +644,6 @@
                     }
                 });
 
-                // Render the view
                 this.render(view, data);
             },
 
@@ -686,14 +651,12 @@
                 const mainContent = document.getElementById('mainContent');
                 const navBar = document.getElementById('navBar');
 
-                // Show/hide nav bar based on view
                 if (['welcome', 'onboarding'].includes(view)) {
                     navBar.style.display = 'none';
                 } else {
                     navBar.style.display = 'flex';
                 }
 
-                // Render the appropriate view
                 switch(view) {
                     case 'welcome':
                         mainContent.innerHTML = Views.welcome();
@@ -727,12 +690,10 @@
                         mainContent.innerHTML = '<p>View not found</p>';
                 }
 
-                // Scroll to top
                 window.scrollTo(0, 0);
             }
         };
 
-        // Views
         const Views = {
             welcome() {
                 return `
@@ -878,9 +839,7 @@
                 `;
             },
 
-            initOnboarding() {
-                // no-op now, kept for future
-            },
+            initOnboarding() {},
 
             nextOnboardingStep(step) {
                 document.querySelectorAll('.onboarding-step').forEach(s => s.classList.add('hidden'));
@@ -1010,7 +969,6 @@
                 };
 
                 AppState.saveMoodCheckIn(moodData);
-
                 Router.navigate('recommendations');
             },
 
@@ -1060,7 +1018,7 @@
                         return;
                     }
 
-                    const response = await fetch('https://moodshelf-backend.onrender.com/api/recommendations', {
+                    const response = await fetch(`${BACKEND_BASE_URL}/api/recommendations`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ user, mood })
@@ -1128,7 +1086,7 @@ ${err.message || err}
                 container.innerHTML = recommendations.map(book => `
                     <div class="book-card" onclick='Router.navigate("book-detail", {book: ${JSON.stringify(book).replace(/'/g, "&apos;")}})'>
                         <div style="display: flex; gap: 1rem;">
-                            <img src="${book.coverUrl}" alt="${book.title}" class="book-cover" onerror="this.src='https://via.placeholder.com/80x120?text=Book'">
+                            <img src="${book.coverUrl}" alt="${book.title}" class="book-cover" onerror="this.src="https://via.placeholder.com/80x120?text=Book"">
                             <div style="flex: 1;">
                                 <h3 style="font-size: 1.25rem; margin-bottom: 0.25rem; color: var(--burgundy);">${book.title}</h3>
                                 <p style="font-size: 0.95rem; opacity: 0.7; margin-bottom: 0.5rem;">by ${book.author}</p>
@@ -1223,7 +1181,6 @@ ${err.message || err}
                         </div>
 
                         <div id="summaryActions" class="hidden" style="margin-top: 2rem; display: flex; gap: 1rem; flex-direction: column;">
-                            <!-- 🔊 Button now calls generateAudioSummary with NO args -->
                             <button class="btn btn-secondary" onclick="Views.generateAudioSummary()">
                                 🎧 Listen to Audio Summary
                             </button>
@@ -1260,7 +1217,7 @@ ${err.message || err}
                     `;
                     progressFill.style.width = '25%';
 
-                    const response = await fetch('https://moodshelf-backend.onrender.com/api/summary', {
+                    const response = await fetch(`${BACKEND_BASE_URL}/api/summary`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ user, mood, book })
@@ -1339,14 +1296,13 @@ ${err.message || err}
                 }
             },
 
-            // 🔊 UPDATED: now calls your ElevenLabs-backed /tts endpoint, no arguments
+            // AUDIO SUMMARY → calls your backend /tts
             async generateAudioSummary() {
                 if (!AppState.currentSummary) {
                     Views.showModal('No Summary Available', 'Please wait for the summary to finish generating first.');
                     return;
                 }
 
-                // Remove any existing modal
                 const existing = document.querySelector('.modal-overlay');
                 if (existing) existing.remove();
 
@@ -1380,17 +1336,22 @@ ${err.message || err}
                     modal.remove();
                 });
 
-                // Strip markdown to get clean text
-                const plainText = AppState.currentSummary
-                    .replace(/#{1,6}\s/g, '')                 // headers
-                    .replace(/\*\*/g, '')                     // bold
-                    .replace(/\*/g, '')                       // italics
-                    .replace(/`/g, '')                        // code
-                    .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1') // links
+                // Strip Markdown → plain text; optionally truncate to avoid provider limits
+                let plainText = AppState.currentSummary
+                    .replace(/#{1,6}\s/g, '')                 
+                    .replace(/\*\*/g, '')                     
+                    .replace(/\*/g, '')                       
+                    .replace(/`/g, '')                        
+                    .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
                     .trim();
 
+                const MAX_CHARS = 4000;
+                if (plainText.length > MAX_CHARS) {
+                    plainText = plainText.slice(0, MAX_CHARS);
+                }
+
                 try {
-                    const res = await fetch('https://moodshelf-backend.onrender.com/tts', {
+                    const res = await fetch(`${BACKEND_BASE_URL}/tts`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ text: plainText })
@@ -1599,7 +1560,6 @@ ${err.message || err}
             }
         };
 
-        // Initialize navigation
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.addEventListener('click', () => {
