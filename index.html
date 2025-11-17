@@ -1223,8 +1223,9 @@ ${err.message || err}
                         </div>
 
                         <div id="summaryActions" class="hidden" style="margin-top: 2rem; display: flex; gap: 1rem; flex-direction: column;">
-                            <button class="btn btn-secondary" onclick='Views.generateAudioSummary(${JSON.stringify(book).replace(/'/g, "&apos;")})'>
-                            🎧 Listen to Audio Summary
+                            <!-- 🔊 Button now calls generateAudioSummary with NO args -->
+                            <button class="btn btn-secondary" onclick="Views.generateAudioSummary()">
+                                🎧 Listen to Audio Summary
                             </button>
                             <button class="btn btn-ghost" onclick="Views.markSummaryComplete()">
                                 ✓ Mark as Completed
@@ -1338,8 +1339,8 @@ ${err.message || err}
                 }
             },
 
-            // 🔊 Uses ElevenLabs via your /tts backend endpoint
-            async generateAudioSummary(book) {
+            // 🔊 UPDATED: now calls your ElevenLabs-backed /tts endpoint, no arguments
+            async generateAudioSummary() {
                 if (!AppState.currentSummary) {
                     Views.showModal('No Summary Available', 'Please wait for the summary to finish generating first.');
                     return;
