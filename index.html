@@ -1166,36 +1166,43 @@ ${err.message || err}
             },
 
             summary(book) {
-                return `
-                    <div style="max-width: 600px; margin: 0 auto;">
-                        <button class="btn btn-ghost mb-2" onclick='Router.navigate("book-detail", {book: ${JSON.stringify(book).replace(/'/g, "&apos;")}})'>← Back to Book</button>
+    return `
+        <div style="max-width: 600px; margin: 0 auto;">
+            <button class="btn btn-ghost mb-2" onclick='Router.navigate("book-detail", {book: ${JSON.stringify(book).replace(/'/g, "&apos;")}})'>← Back to Book</button>
 
-                        <h2 style="font-size: 1.75rem; margin-bottom: 0.5rem; color: var(--burgundy);">${book.title}</h2>
-                        <p style="font-size: 1rem; opacity: 0.7; margin-bottom: 1.5rem;">by ${book.author}</p>
+            <h2 style="font-size: 1.75rem; margin-bottom: 0.5rem; color: var(--burgundy);">${book.title}</h2>
+            <p style="font-size: 1rem; opacity: 0.7; margin-bottom: 1.5rem;">by ${book.author}</p>
 
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="summaryProgress" style="width: 0%;"></div>
-                        </div>
-                        <p style="font-size: 0.85rem; opacity: 0.6; margin-top: 0.5rem; text-align: center;">Estimated reading time: ~20 minutes</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="summaryProgress" style="width: 0%;"></div>
+            </div>
+            <p style="font-size: 0.85rem; opacity: 0.6; margin-top: 0.5rem; text-align: center;">Estimated reading time: ~20 minutes</p>
 
-                        <div id="summaryContent" style="margin-top: 2rem;">
-                            <div class="loading">
-                                <div class="spinner"></div>
-                                <p>Generating your personalized summary...</p>
-                            </div>
-                        </div>
+            <div id="summaryContent" style="margin-top: 2rem;">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Generating your personalized summary...</p>
+                </div>
+            </div>
 
-                        <div id="summaryActions" class="hidden" style="margin-top: 2rem; display: flex; gap: 1rem; flex-direction: column;">
-                            <button class="btn btn-secondary" onclick="Views.generateAudioSummary()">
-                                🎧 Listen to Audio Summary
-                            </button>
-                            <button class="btn btn-ghost" onclick="Views.markSummaryComplete()">
-                                ✓ Mark as Completed
-                            </button>
-                        </div>
-                    </div>
-                `;
-            },
+            <div id="summaryActions" class="hidden" style="margin-top: 2rem; display: flex; gap: 0.75rem; flex-direction: column;">
+                <!-- Full, long summary via browser TTS -->
+                <button class="btn btn-secondary" onclick="Views.playBrowserTTS()">
+                    🗣️ Read Full Summary (Browser)
+                </button>
+
+                <!-- Short (~100 words) audio via ElevenLabs -->
+                <button class="btn btn-secondary" onclick="Views.generateShortAudioSummary()">
+                    🎧 Quick Audio (ElevenLabs ~100 words)
+                </button>
+
+                <button class="btn btn-ghost" onclick="Views.markSummaryComplete()">
+                    ✓ Mark as Completed
+                </button>
+            </div>
+        </div>
+    `;
+},
 
             async initSummary(book) {
                 const summaryContent = document.getElementById('summaryContent');
@@ -1301,50 +1308,88 @@ ${err.message || err}
                 }
             },
             
-// 🔊 NEW: browser-side TTS using SpeechSynthesis, no backend /tts
-generateAudioSummary() {
+// Helper to strip markdown for both TTS options
+_stripMarkdown(text) {
+    return (text || "")
+        .replace(/#{1,6}\s/g, "")                 // headers
+        .replace(/\*\*/g, "")                     // bold
+        .replace(/\*/g, "")                       // italics
+        .replace(/`/g, "")                        // code
+        .replace(/\[([^\]]+)\]\([^\)]+\)/g, "$1") // links
+        .replace(/>\s?/g, "")                     // blockquotes
+        .trim();
+},
+
+// 🗣️ Option 1: Browser TTS for the full summary
+playBrowserTTS() {
     if (!AppState.currentSummary) {
         Views.showModal(
-            'No Summary Available',
-            'Please wait for the summary to finish generating first.'
+            "No Summary Available",
+            "Please wait for the summary to finish generating first."
         );
         return;
     }
 
-    // Check browser support
-    if (!('speechSynthesis' in window)) {
+    if (!("speechSynthesis" in window)) {
         Views.showModal(
-            'Audio Not Supported',
-            'Your browser does not support text-to-speech. Try a newer browser or device.'
+            "Not Supported",
+            "Your browser does not support text-to-speech. Try a modern browser like Chrome, Edge, Safari, or Firefox."
+        );
+        return;
+    }
+
+    const synth = window.speechSynthesis;
+
+    // If already speaking, calling again will stop it
+    if (synth.speaking) {
+        synth.cancel();
+        Views.showModal("Stopped", "Stopped reading the summary aloud.");
+        return;
+    }
+
+    const plainText = Views._stripMarkdown(AppState.currentSummary);
+
+    const utterance = new SpeechSynthesisUtterance(plainText);
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+
+    synth.speak(utterance);
+
+    Views.showModal(
+        "Reading Started",
+        "Your browser is now reading the full summary. You can tap the button again to stop it."
+    );
+},
+
+// 🎧 Option 2: ElevenLabs – short (~100 words) audio via /tts
+async generateShortAudioSummary() {
+    if (!AppState.currentSummary) {
+        Views.showModal(
+            "No Summary Available",
+            "Please wait for the summary to finish generating first."
         );
         return;
     }
 
     // Remove any existing modal
-    const existing = document.querySelector('.modal-overlay');
+    const existing = document.querySelector(".modal-overlay");
     if (existing) existing.remove();
 
-    const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
+    const modal = document.createElement("div");
+    modal.className = "modal-overlay";
     modal.innerHTML = `
         <div class="modal-content">
-            <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: var(--burgundy);">
-                Audio Summary
-            </h3>
+            <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: var(--burgundy);">Quick Audio (ElevenLabs)</h3>
             <p style="margin-bottom: 1rem;">
-                Your device will read this summary aloud. You can play, pause or stop anytime.
+                Generating a short audio version of this summary (~100 words).
             </p>
 
-            <div id="audioControls" style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
-                <button class="btn btn-primary" data-action="play" style="flex:1;">▶ Play</button>
-                <button class="btn btn-secondary" data-action="pause" style="flex:1;">⏸ Pause</button>
-                <button class="btn btn-secondary" data-action="resume" style="flex:1;">▶ Resume</button>
-                <button class="btn btn-secondary" data-action="stop" style="flex:1;">⏹ Stop</button>
+            <div id="audioPlayerContainer">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Generating audio...</p>
+                </div>
             </div>
-
-            <p style="font-size:0.9rem; opacity:0.7;">
-                Tip: On iPhone, make sure your ringer is on and media volume is up.
-            </p>
 
             <button class="btn btn-ghost mt-3" style="width: 100%;" data-action="close">
                 Close
@@ -1353,83 +1398,65 @@ generateAudioSummary() {
     `;
     document.body.appendChild(modal);
 
-    const synth = window.speechSynthesis;
-
-    // Strip markdown to get plain text
-    const plainText = AppState.currentSummary
-        .replace(/#{1,6}\s/g, '')                 // headers
-        .replace(/\*\*/g, '')                     // bold
-        .replace(/\*/g, '')                       // italics
-        .replace(/`/g, '')                        // code
-        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')  // links
-        .replace(/>\s?/g, '')                     // blockquotes
-        .trim();
-
-    // Split into smaller chunks so speechSynthesis doesn’t choke
-    const chunks = plainText
-        .split(/\n{2,}|\r{2,}/) // split by blank lines
-        .map(p => p.trim())
-        .filter(p => p.length > 0);
-
-    let utterances = [];
-    let currentIndex = 0;
-
-    function buildUtterances() {
-        utterances = chunks.map((chunk, idx) => {
-            const u = new SpeechSynthesisUtterance(chunk);
-            u.rate = 1;   // speed
-            u.pitch = 1;  // tone
-
-            // When one chunk finishes, speak the next automatically
-            u.onend = () => {
-                currentIndex++;
-                if (currentIndex < utterances.length && !synth.paused) {
-                    synth.speak(utterances[currentIndex]);
-                }
-            };
-            return u;
-        });
-        currentIndex = 0;
-    }
-
-    buildUtterances();
-
-    function start() {
-        // stop anything currently speaking
-        synth.cancel();
-        if (!utterances.length) return;
-        currentIndex = 0;
-        synth.speak(utterances[currentIndex]);
-    }
-
-    function pause() {
-        if (synth.speaking && !synth.paused) {
-            synth.pause();
-        }
-    }
-
-    function resume() {
-        if (synth.paused) {
-            synth.resume();
-        }
-    }
-
-    function stop() {
-        synth.cancel();
-    }
-
-    // Wire up buttons
-    const controls = modal.querySelector('#audioControls');
-    controls.querySelector('[data-action="play"]').addEventListener('click', start);
-    controls.querySelector('[data-action="pause"]').addEventListener('click', pause);
-    controls.querySelector('[data-action="resume"]').addEventListener('click', resume);
-    controls.querySelector('[data-action="stop"]').addEventListener('click', stop);
-
+    const container = modal.querySelector("#audioPlayerContainer");
     const closeBtn = modal.querySelector('[data-action="close"]');
-    closeBtn.addEventListener('click', () => {
-        stop();
+
+    closeBtn.addEventListener("click", () => {
         modal.remove();
     });
+
+    // Strip markdown and truncate to ~100–120 words
+    const plainText = Views._stripMarkdown(AppState.currentSummary);
+    const shortText = plainText
+        .split(/\s+/)
+        .slice(0, 120)
+        .join(" ")
+        .trim();
+
+    try {
+        const res = await fetch("https://moodshelf-backend.onrender.com/tts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: shortText }),
+        });
+
+        if (!res.ok) {
+            const errText = await res.text();
+            container.innerHTML = `
+                <p style="color: var(--burgundy); margin-bottom: 0.75rem;">
+                    Error generating audio: <strong>${res.status} ${res.statusText}</strong>
+                </p>
+                <pre style="text-align:left; white-space:pre-wrap; background:var(--parchment); padding:0.75rem; border-radius:8px; max-height:200px; overflow:auto;">
+${errText || "(no error body)"}
+                </pre>
+            `;
+            return;
+        }
+
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        AppState.audioUrl = url;
+
+        container.innerHTML = `
+            <div class="audio-player">
+                <audio controls style="width: 100%;" src="${url}">
+                    Your browser does not support the audio element.
+                </audio>
+                <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.7;">
+                    This is a short highlight version (~100 words). For the full 20-minute summary, use the browser read-aloud option.
+                </p>
+            </div>
+        `;
+    } catch (err) {
+        container.innerHTML = `
+            <p style="color: var(--burgundy); margin-bottom: 0.75rem;">
+                Network error while generating audio:
+            </p>
+            <pre style="text-align:left; white-space:pre-wrap; background:var(--parchment); padding:0.75rem; border-radius:8px; max-height:200px; overflow:auto;">
+${err.message || err}
+            </pre>
+        `;
+    }
 },
     markSummaryComplete() {
                 Views.showModal('Summary Completed! 🎉', 'Great job finishing this summary! The insights you\'ve gained are now part of your reading journey.');
