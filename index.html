@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MoodShelf - AI-Powered Reading Companion</title>
 
-    <!-- Add these two lines -->
+    <!-- PWA -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#6B2737">
 
@@ -535,22 +535,22 @@
     </div>
 
     <script>
-        // === CONFIG: point to your Render backend ===
+        // === CONFIG: backend base URL ===
         const BACKEND_BASE_URL = "https://moodshelf-backend.onrender.com";
 
         // Dark mode detection
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.documentElement.classList.add('dark');
+        if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+            document.documentElement.classList.add("dark");
         }
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+        window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", event => {
             if (event.matches) {
-                document.documentElement.classList.add('dark');
+                document.documentElement.classList.add("dark");
             } else {
-                document.documentElement.classList.remove('dark');
+                document.documentElement.classList.remove("dark");
             }
         });
 
-        // Simple in-memory storage (kept to match your current behavior)
+        // Simple in-memory storage
         const Storage = {
             data: {},
             init() {
@@ -581,7 +581,7 @@
 
         const AppState = {
             user: null,
-            currentView: 'welcome',
+            currentView: "welcome",
             currentMoodCheckIn: null,
             recommendations: [],
             savedBooks: [],
@@ -593,19 +593,19 @@
             init() {
                 this.loadFromStorage();
                 if (this.user) {
-                    this.currentView = 'check-in';
+                    this.currentView = "check-in";
                 }
             },
 
             loadFromStorage() {
-                this.user = JSON.parse(Storage.getItem('moodshelf_user') || 'null');
-                this.savedBooks = JSON.parse(Storage.getItem('moodshelf_saved_books') || '[]');
-                this.moodHistory = JSON.parse(Storage.getItem('moodshelf_mood_history') || '[]');
+                this.user = JSON.parse(Storage.getItem("moodshelf_user") || "null");
+                this.savedBooks = JSON.parse(Storage.getItem("moodshelf_saved_books") || "[]");
+                this.moodHistory = JSON.parse(Storage.getItem("moodshelf_mood_history") || "[]");
             },
 
             saveUser(userData) {
                 this.user = userData;
-                Storage.setItem('moodshelf_user', JSON.stringify(userData));
+                Storage.setItem("moodshelf_user", JSON.stringify(userData));
             },
 
             saveMoodCheckIn(moodData) {
@@ -614,19 +614,19 @@
                     ...moodData,
                     timestamp: new Date().toISOString()
                 });
-                Storage.setItem('moodshelf_mood_history', JSON.stringify(this.moodHistory));
+                Storage.setItem("moodshelf_mood_history", JSON.stringify(this.moodHistory));
             },
 
             saveBook(book) {
                 if (!this.savedBooks.find(b => b.id === book.id)) {
                     this.savedBooks.push(book);
-                    Storage.setItem('moodshelf_saved_books', JSON.stringify(this.savedBooks));
+                    Storage.setItem("moodshelf_saved_books", JSON.stringify(this.savedBooks));
                 }
             },
 
             removeBook(bookId) {
                 this.savedBooks = this.savedBooks.filter(b => b.id !== bookId);
-                Storage.setItem('moodshelf_saved_books', JSON.stringify(this.savedBooks));
+                Storage.setItem("moodshelf_saved_books", JSON.stringify(this.savedBooks));
             },
 
             reset() {
@@ -634,7 +634,7 @@
                 this.user = null;
                 this.savedBooks = [];
                 this.moodHistory = [];
-                this.currentView = 'welcome';
+                this.currentView = "welcome";
             }
         };
 
@@ -642,10 +642,10 @@
             navigate(view, data = {}) {
                 AppState.currentView = view;
 
-                document.querySelectorAll('.nav-item').forEach(item => {
-                    item.classList.remove('active');
+                document.querySelectorAll(".nav-item").forEach(item => {
+                    item.classList.remove("active");
                     if (item.dataset.view === view) {
-                        item.classList.add('active');
+                        item.classList.add("active");
                     }
                 });
 
@@ -653,46 +653,46 @@
             },
 
             render(view, data) {
-                const mainContent = document.getElementById('mainContent');
-                const navBar = document.getElementById('navBar');
+                const mainContent = document.getElementById("mainContent");
+                const navBar = document.getElementById("navBar");
 
-                if (['welcome', 'onboarding'].includes(view)) {
-                    navBar.style.display = 'none';
+                if (["welcome", "onboarding"].includes(view)) {
+                    navBar.style.display = "none";
                 } else {
-                    navBar.style.display = 'flex';
+                    navBar.style.display = "flex";
                 }
 
-                switch(view) {
-                    case 'welcome':
+                switch (view) {
+                    case "welcome":
                         mainContent.innerHTML = Views.welcome();
                         break;
-                    case 'onboarding':
+                    case "onboarding":
                         mainContent.innerHTML = Views.onboarding();
                         Views.initOnboarding();
                         break;
-                    case 'check-in':
+                    case "check-in":
                         mainContent.innerHTML = Views.checkIn();
                         Views.initCheckIn();
                         break;
-                    case 'recommendations':
+                    case "recommendations":
                         mainContent.innerHTML = Views.recommendations();
                         Views.initRecommendations();
                         break;
-                    case 'book-detail':
+                    case "book-detail":
                         mainContent.innerHTML = Views.bookDetail(data.book);
                         break;
-                    case 'summary':
+                    case "summary":
                         mainContent.innerHTML = Views.summary(data.book);
                         Views.initSummary(data.book);
                         break;
-                    case 'library':
+                    case "library":
                         mainContent.innerHTML = Views.library();
                         break;
-                    case 'settings':
+                    case "settings":
                         mainContent.innerHTML = Views.settings();
                         break;
                     default:
-                        mainContent.innerHTML = '<p>View not found</p>';
+                        mainContent.innerHTML = "<p>View not found</p>";
                 }
 
                 window.scrollTo(0, 0);
@@ -847,22 +847,22 @@
             initOnboarding() {},
 
             nextOnboardingStep(step) {
-                document.querySelectorAll('.onboarding-step').forEach(s => s.classList.add('hidden'));
-                document.getElementById(`step${step}`).classList.remove('hidden');
+                document.querySelectorAll(".onboarding-step").forEach(s => s.classList.add("hidden"));
+                document.getElementById(`step${step}`).classList.remove("hidden");
             },
 
             completeOnboarding() {
-                const age = document.getElementById('age').value;
-                const gender = document.getElementById('gender').value;
+                const age = document.getElementById("age").value;
+                const gender = document.getElementById("gender").value;
 
-                const genres = Array.from(document.querySelectorAll('#genreCheckboxes input:checked'))
+                const genres = Array.from(document.querySelectorAll("#genreCheckboxes input:checked"))
                     .map(cb => cb.value);
 
-                const goals = Array.from(document.querySelectorAll('#goalsCheckboxes input:checked'))
+                const goals = Array.from(document.querySelectorAll("#goalsCheckboxes input:checked"))
                     .map(cb => cb.value);
 
                 if (!age || genres.length === 0 || goals.length === 0) {
-                    Views.showModal('Please Complete All Steps', 'Please make sure to enter your age and select at least one genre and one goal.');
+                    Views.showModal("Please Complete All Steps", "Please make sure to enter your age and select at least one genre and one goal.");
                     return;
                 }
 
@@ -875,7 +875,7 @@
                 };
 
                 AppState.saveUser(userData);
-                Router.navigate('check-in');
+                Router.navigate("check-in");
             },
 
             checkIn() {
@@ -927,42 +927,42 @@
             },
 
             initCheckIn() {
-                const slider = document.getElementById('moodSlider');
-                const moodValue = document.getElementById('moodValue');
+                const slider = document.getElementById("moodSlider");
+                const moodValue = document.getElementById("moodValue");
 
                 const moodLabels = {
-                    1: 'Very Low (1)',
-                    2: 'Low (2)',
-                    3: 'Somewhat Low (3)',
-                    4: 'Below Neutral (4)',
-                    5: 'Neutral (5)',
-                    6: 'Above Neutral (6)',
-                    7: 'Somewhat High (7)',
-                    8: 'High (8)',
-                    9: 'Very High (9)',
-                    10: 'Excellent (10)'
+                    1: "Very Low (1)",
+                    2: "Low (2)",
+                    3: "Somewhat Low (3)",
+                    4: "Below Neutral (4)",
+                    5: "Neutral (5)",
+                    6: "Above Neutral (6)",
+                    7: "Somewhat High (7)",
+                    8: "High (8)",
+                    9: "Very High (9)",
+                    10: "Excellent (10)"
                 };
 
-                slider.addEventListener('input', (e) => {
+                slider.addEventListener("input", (e) => {
                     moodValue.textContent = moodLabels[e.target.value];
                 });
 
-                const moodTags = document.querySelectorAll('.mood-tag');
+                const moodTags = document.querySelectorAll(".mood-tag");
                 moodTags.forEach(tag => {
-                    tag.addEventListener('click', () => {
-                        tag.classList.toggle('selected');
+                    tag.addEventListener("click", () => {
+                        tag.classList.toggle("selected");
                     });
                 });
             },
 
             async submitCheckIn() {
-                const moodScore = parseInt(document.getElementById('moodSlider').value);
-                const selectedTags = Array.from(document.querySelectorAll('.mood-tag.selected'))
+                const moodScore = parseInt(document.getElementById("moodSlider").value);
+                const selectedTags = Array.from(document.querySelectorAll(".mood-tag.selected"))
                     .map(tag => tag.dataset.tag);
-                const freeText = document.getElementById('freeText').value.trim();
+                const freeText = document.getElementById("freeText").value.trim();
 
                 if (selectedTags.length === 0) {
-                    Views.showModal('Select Your Mood', 'Please select at least one mood tag to help us understand how you\'re feeling.');
+                    Views.showModal("Select Your Mood", "Please select at least one mood tag to help us understand how you're feeling.");
                     return;
                 }
 
@@ -974,7 +974,7 @@
                 };
 
                 AppState.saveMoodCheckIn(moodData);
-                Router.navigate('recommendations');
+                Router.navigate("recommendations");
             },
 
             recommendations() {
@@ -1008,7 +1008,7 @@
             },
 
             async fetchRecommendations() {
-                const container = document.getElementById('recommendationsContainer');
+                const container = document.getElementById("recommendationsContainer");
 
                 try {
                     const user = AppState.user;
@@ -1024,8 +1024,8 @@
                     }
 
                     const response = await fetch(`${BACKEND_BASE_URL}/api/recommendations`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ user, mood })
                     });
 
@@ -1038,7 +1038,7 @@
                                     Error fetching recommendations: <strong>${response.status} ${response.statusText}</strong>
                                 </p>
                                 <pre style="text-align:left; white-space:pre-wrap; background:var(--parchment); padding:0.75rem; border-radius:8px; max-height:200px; overflow:auto;">
-${text || '(no error body)'}
+${text || "(no error body)"}
                                 </pre>
                                 <button class="btn btn-primary mt-2" onclick="Views.fetchRecommendations()">Try Again</button>
                             </div>
@@ -1081,17 +1081,17 @@ ${err.message || err}
             },
 
             displayRecommendations(recommendations) {
-                const container = document.getElementById('recommendationsContainer');
+                const container = document.getElementById("recommendationsContainer");
 
                 if (!recommendations || recommendations.length === 0) {
-                    container.innerHTML = '<p>No recommendations available. Please try refreshing.</p>';
+                    container.innerHTML = "<p>No recommendations available. Please try refreshing.</p>";
                     return;
                 }
 
                 container.innerHTML = recommendations.map(book => `
                     <div class="book-card" onclick='Router.navigate("book-detail", {book: ${JSON.stringify(book).replace(/'/g, "&apos;")}})'>
                         <div style="display: flex; gap: 1rem;">
-                            <img src="${book.coverUrl}" alt="${book.title}" class="book-cover" onerror="this.src="https://via.placeholder.com/80x120?text=Book"">
+                            <img src="${book.coverUrl}" alt="${book.title}" class="book-cover" onerror="this.src='https://via.placeholder.com/80x120?text=Book'">
                             <div style="flex: 1;">
                                 <h3 style="font-size: 1.25rem; margin-bottom: 0.25rem; color: var(--burgundy);">${book.title}</h3>
                                 <p style="font-size: 0.95rem; opacity: 0.7; margin-bottom: 0.5rem;">by ${book.author}</p>
@@ -1100,17 +1100,17 @@ ${err.message || err}
                                     <span style="background: var(--parchment); padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85rem;">${book.moodAlignment}</span>
                                     ${book.tags.slice(0, 2).map(tag => `
                                         <span style="background: var(--parchment); padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85rem;">${tag}</span>
-                                    `).join('')}
+                                    `).join("")}
                                 </div>
                             </div>
                         </div>
                     </div>
-                `).join('');
+                `).join("");
             },
 
             async refreshRecommendations() {
                 AppState.recommendations = [];
-                const container = document.getElementById('recommendationsContainer');
+                const container = document.getElementById("recommendationsContainer");
                 container.innerHTML = `
                     <div class="loading">
                         <div class="spinner"></div>
@@ -1144,15 +1144,15 @@ ${err.message || err}
 
                         <div class="disclaimer mb-3">
                             <strong>📚 About This Book:</strong><br>
-                            This book has been selected based on your current mood (${AppState.currentMoodCheckIn && Array.isArray(AppState.currentMoodCheckIn.moodTags) ? AppState.currentMoodCheckIn.moodTags.join(', ') : 'your current mood'}) and your goals. The summary you'll read is AI-generated and designed to give you the core ideas in about 20 minutes.
+                            This book has been selected based on your current mood (${AppState.currentMoodCheckIn && Array.isArray(AppState.currentMoodCheckIn.moodTags) ? AppState.currentMoodCheckIn.moodTags.join(", ") : "your current mood"}) and your goals. The summary you'll read is AI-generated and designed to give you the core ideas in a focused, concise way.
                         </div>
 
                         <div style="display: flex; flex-direction: column; gap: 1rem;">
                             <button class="btn btn-primary" onclick='Router.navigate("summary", {book: ${JSON.stringify(book).replace(/'/g, "&apos;")}})'>
-                                📖 Read 20-Minute Summary
+                                📖 Read Summary
                             </button>
                             <button class="btn btn-secondary" onclick="Views.saveBookToLibrary(${JSON.stringify(book).replace(/'/g, "&apos;")})">
-                                ${isSaved ? '✓ Saved to Library' : '💾 Save to Library'}
+                                ${isSaved ? "✓ Saved to Library" : "💾 Save to Library"}
                             </button>
                         </div>
                     </div>
@@ -1161,52 +1161,66 @@ ${err.message || err}
 
             saveBookToLibrary(book) {
                 AppState.saveBook(book);
-                Views.showModal('Book Saved!', `"${book.title}" has been added to your library.`);
-                Router.navigate('book-detail', { book });
+                Views.showModal("Book Saved!", `"${book.title}" has been added to your library.`);
+                Router.navigate("book-detail", { book });
             },
 
             summary(book) {
-    return `
-        <div style="max-width: 600px; margin: 0 auto;">
-            <button class="btn btn-ghost mb-2" onclick='Router.navigate("book-detail", {book: ${JSON.stringify(book).replace(/'/g, "&apos;")}})'>← Back to Book</button>
+                return `
+                    <div style="max-width: 600px; margin: 0 auto;">
+                        <button class="btn btn-ghost mb-2" onclick='Router.navigate("book-detail", {book: ${JSON.stringify(book).replace(/'/g, "&apos;")}})'>← Back to Book</button>
 
-            <h2 style="font-size: 1.75rem; margin-bottom: 0.5rem; color: var(--burgundy);">${book.title}</h2>
-            <p style="font-size: 1rem; opacity: 0.7; margin-bottom: 1.5rem;">by ${book.author}</p>
+                        <h2 style="font-size: 1.75rem; margin-bottom: 0.5rem; color: var(--burgundy);">${book.title}</h2>
+                        <p style="font-size: 1rem; opacity: 0.7; margin-bottom: 1.5rem;">by ${book.author}</p>
 
-            <div class="progress-bar">
-                <div class="progress-fill" id="summaryProgress" style="width: 0%;"></div>
-            </div>
-            <p style="font-size: 0.85rem; opacity: 0.6; margin-top: 0.5rem; text-align: center;">Estimated reading time: ~20 minutes</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="summaryProgress" style="width: 0%;"></div>
+                        </div>
 
-            <div id="summaryContent" style="margin-top: 2rem;">
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <p>Generating your personalized summary...</p>
-                </div>
-            </div>
+                        <div id="summaryContent" style="margin-top: 2rem;">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Generating your personalized summary...</p>
+                            </div>
+                        </div>
 
-            <div id="summaryActions" class="hidden" style="margin-top: 2rem; display: flex; gap: 0.75rem; flex-direction: column;">
-                <!-- Full, long summary via browser TTS -->
-                <button class="btn btn-secondary" onclick="Views.playBrowserTTS()">
-                    🗣️ Read Full Summary (Browser)
-                </button>
+                        <div id="summaryActions" class="hidden" style="margin-top: 2rem; display: flex; gap: 0.75rem; flex-direction: column;">
+                            <div class="form-group">
+                                <label class="form-label" for="voiceSelect">Voice</label>
+                                <select id="voiceSelect" class="form-select">
+                                    <optgroup label="American English">
+                                        <option value="en-us|Mary">Mary (US)</option>
+                                        <option value="en-us|John">John (US)</option>
+                                        <option value="en-us|Linda">Linda (US)</option>
+                                        <option value="en-us|Mike">Mike (US)</option>
+                                    </optgroup>
+                                    <optgroup label="British English">
+                                        <option value="en-gb|Amy">Amy (UK)</option>
+                                        <option value="en-gb|Emma">Emma (UK)</option>
+                                        <option value="en-gb|Brian">Brian (UK)</option>
+                                    </optgroup>
+                                </select>
+                            </div>
 
-                <!-- Short (~100 words) audio via ElevenLabs -->
-                <button class="btn btn-secondary" onclick="Views.generateShortAudioSummary()">
-                    🎧 Quick Audio (ElevenLabs ~100 words)
-                </button>
+                            <button class="btn btn-secondary" onclick="Views.playBrowserTTS()">
+                                🗣️ Listen in this browser
+                            </button>
 
-                <button class="btn btn-ghost" onclick="Views.markSummaryComplete()">
-                    ✓ Mark as Completed
-                </button>
-            </div>
-        </div>
-    `;
-},
+                            <button class="btn btn-secondary" onclick="Views.generateAudioSummary()">
+                                🎧 Listen with selected voice
+                            </button>
+
+                            <button class="btn btn-ghost" onclick="Views.markSummaryComplete()">
+                                ✓ Mark as Completed
+                            </button>
+                        </div>
+                    </div>
+                `;
+            },
 
             async initSummary(book) {
-                const summaryContent = document.getElementById('summaryContent');
-                const progressFill = document.getElementById('summaryProgress');
+                const summaryContent = document.getElementById("summaryContent");
+                const progressFill = document.getElementById("summaryProgress");
 
                 try {
                     const user = AppState.user;
@@ -1227,11 +1241,11 @@ ${err.message || err}
                             <p>Generating your personalized summary...</p>
                         </div>
                     `;
-                    progressFill.style.width = '25%';
+                    progressFill.style.width = "25%";
 
                     const response = await fetch(`${BACKEND_BASE_URL}/api/summary`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ user, mood, book })
                     });
 
@@ -1244,14 +1258,14 @@ ${err.message || err}
                                     Error generating summary: <strong>${response.status} ${response.statusText}</strong>
                                 </p>
                                 <pre style="text-align:left; white-space:pre-wrap; background:var(--parchment); padding:0.75rem; border-radius:8px; max-height:200px; overflow:auto;">
-${text || '(no error body)'}
+${text || "(no error body)"}
                                 </pre>
                                 <button class="btn btn-primary mt-2" onclick='Views.initSummary(${JSON.stringify(book).replace(/'/g, "&apos;")})'>
                                     Try Again
                                 </button>
                             </div>
                         `;
-                        progressFill.style.width = '0%';
+                        progressFill.style.width = "0%";
                         return;
                     }
 
@@ -1269,11 +1283,11 @@ ${text}
                                 </pre>
                             </div>
                         `;
-                        progressFill.style.width = '0%';
+                        progressFill.style.width = "0%";
                         return;
                     }
 
-                    const summary = data.summary || '';
+                    const summary = data.summary || "";
 
                     if (!summary) {
                         summaryContent.innerHTML = `
@@ -1281,15 +1295,15 @@ ${text}
                                 <p style="color: var(--burgundy);">No summary returned from the server.</p>
                             </div>
                         `;
-                        progressFill.style.width = '0%';
+                        progressFill.style.width = "0%";
                         return;
                     }
 
                     AppState.currentSummary = summary;
 
                     summaryContent.innerHTML = `<div class="summary-content">${marked.parse(summary)}</div>`;
-                    progressFill.style.width = '100%';
-                    document.getElementById('summaryActions').classList.remove('hidden');
+                    progressFill.style.width = "100%";
+                    document.getElementById("summaryActions").classList.remove("hidden");
                 } catch (err) {
                     summaryContent.innerHTML = `
                         <div style="text-align: center; padding: 2rem;">
@@ -1304,162 +1318,159 @@ ${err.message || err}
                             </button>
                         </div>
                     `;
-                    progressFill.style.width = '0%';
+                    progressFill.style.width = "0%";
                 }
             },
-            
-// Helper to strip markdown for both TTS options
-_stripMarkdown(text) {
-    return (text || "")
-        .replace(/#{1,6}\s/g, "")                 // headers
-        .replace(/\*\*/g, "")                     // bold
-        .replace(/\*/g, "")                       // italics
-        .replace(/`/g, "")                        // code
-        .replace(/\[([^\]]+)\]\([^\)]+\)/g, "$1") // links
-        .replace(/>\s?/g, "")                     // blockquotes
-        .trim();
-},
 
-// 🗣️ Option 1: Browser TTS for the full summary
-playBrowserTTS() {
-    if (!AppState.currentSummary) {
-        Views.showModal(
-            "No Summary Available",
-            "Please wait for the summary to finish generating first."
-        );
-        return;
-    }
+            _stripMarkdown(text) {
+                return (text || "")
+                    .replace(/#{1,6}\s/g, "")                 // headers
+                    .replace(/\*\*/g, "")                     // bold
+                    .replace(/\*/g, "")                       // italics
+                    .replace(/`/g, "")                        // code
+                    .replace(/\[([^\]]+)\]\([^\)]+\)/g, "$1") // links
+                    .replace(/>\s?/g, "")                     // blockquotes
+                    .trim();
+            },
 
-    if (!("speechSynthesis" in window)) {
-        Views.showModal(
-            "Not Supported",
-            "Your browser does not support text-to-speech. Try a modern browser like Chrome, Edge, Safari, or Firefox."
-        );
-        return;
-    }
+            // Full summary via browser TTS
+            playBrowserTTS() {
+                if (!AppState.currentSummary) {
+                    Views.showModal("No Summary Available", "Please wait for the summary to finish generating first.");
+                    return;
+                }
 
-    const synth = window.speechSynthesis;
+                if (!("speechSynthesis" in window)) {
+                    Views.showModal(
+                        "Not Supported",
+                        "Your browser does not support text-to-speech. Try a modern browser like Chrome, Edge, Safari, or Firefox."
+                    );
+                    return;
+                }
 
-    // If already speaking, calling again will stop it
-    if (synth.speaking) {
-        synth.cancel();
-        Views.showModal("Stopped", "Stopped reading the summary aloud.");
-        return;
-    }
+                const synth = window.speechSynthesis;
 
-    const plainText = Views._stripMarkdown(AppState.currentSummary);
+                if (synth.speaking) {
+                    synth.cancel();
+                    Views.showModal("Stopped", "Stopped reading the summary aloud.");
+                    return;
+                }
 
-    const utterance = new SpeechSynthesisUtterance(plainText);
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
+                const plainText = Views._stripMarkdown(AppState.currentSummary);
+                const utterance = new SpeechSynthesisUtterance(plainText);
+                utterance.rate = 1.0;
+                utterance.pitch = 1.0;
 
-    synth.speak(utterance);
+                synth.speak(utterance);
 
-    Views.showModal(
-        "Reading Started",
-        "Your browser is now reading the full summary. You can tap the button again to stop it."
-    );
-},
+                Views.showModal(
+                    "Reading Started",
+                    "Your browser is now reading the summary. You can tap the button again to stop it."
+                );
+            },
 
-// 🎧 Option 2: ElevenLabs – short (~100 words) audio via /tts
-async generateShortAudioSummary() {
-    if (!AppState.currentSummary) {
-        Views.showModal(
-            "No Summary Available",
-            "Please wait for the summary to finish generating first."
-        );
-        return;
-    }
+            // Full summary via backend TTS with selected voice
+            async generateAudioSummary() {
+                if (!AppState.currentSummary) {
+                    Views.showModal("No Summary Available", "Please wait for the summary to finish generating first.");
+                    return;
+                }
 
-    // Remove any existing modal
-    const existing = document.querySelector(".modal-overlay");
-    if (existing) existing.remove();
+                const existing = document.querySelector(".modal-overlay");
+                if (existing) existing.remove();
 
-    const modal = document.createElement("div");
-    modal.className = "modal-overlay";
-    modal.innerHTML = `
-        <div class="modal-content">
-            <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: var(--burgundy);">Quick Audio (ElevenLabs)</h3>
-            <p style="margin-bottom: 1rem;">
-                Generating a short audio version of this summary (~100 words).
-            </p>
+                const modal = document.createElement("div");
+                modal.className = "modal-overlay";
+                modal.innerHTML = `
+                    <div class="modal-content">
+                        <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: var(--burgundy);">Audio</h3>
+                        <p style="margin-bottom: 1rem;">
+                            Creating an audio version of this summary.
+                        </p>
 
-            <div id="audioPlayerContainer">
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <p>Generating audio...</p>
-                </div>
-            </div>
+                        <div id="audioPlayerContainer">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Generating audio...</p>
+                            </div>
+                        </div>
 
-            <button class="btn btn-ghost mt-3" style="width: 100%;" data-action="close">
-                Close
-            </button>
-        </div>
-    `;
-    document.body.appendChild(modal);
+                        <button class="btn btn-ghost mt-3" style="width: 100%;" data-action="close">
+                            Close
+                        </button>
+                    </div>
+                `;
+                document.body.appendChild(modal);
 
-    const container = modal.querySelector("#audioPlayerContainer");
-    const closeBtn = modal.querySelector('[data-action="close"]');
+                const container = modal.querySelector("#audioPlayerContainer");
+                const closeBtn = modal.querySelector('[data-action="close"]');
 
-    closeBtn.addEventListener("click", () => {
-        modal.remove();
-    });
+                closeBtn.addEventListener("click", () => {
+                    modal.remove();
+                });
 
-    // Strip markdown and truncate to ~100–120 words
-    const plainText = Views._stripMarkdown(AppState.currentSummary);
-    const shortText = plainText
-        .split(/\s+/)
-        .slice(0, 120)
-        .join(" ")
-        .trim();
+                const plainText = Views._stripMarkdown(AppState.currentSummary);
 
-    try {
-        const res = await fetch("https://moodshelf-backend.onrender.com/tts", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: shortText }),
-        });
+                // Voice selection
+                let hl = "en-us";
+                let voice = "Mary";
+                const select = document.getElementById("voiceSelect");
+                if (select && select.value) {
+                    const parts = select.value.split("|");
+                    if (parts.length === 2) {
+                        hl = parts[0];
+                        voice = parts[1];
+                    }
+                }
 
-        if (!res.ok) {
-            const errText = await res.text();
-            container.innerHTML = `
-                <p style="color: var(--burgundy); margin-bottom: 0.75rem;">
-                    Error generating audio: <strong>${res.status} ${res.statusText}</strong>
-                </p>
-                <pre style="text-align:left; white-space:pre-wrap; background:var(--parchment); padding:0.75rem; border-radius:8px; max-height:200px; overflow:auto;">
+                try {
+                    const res = await fetch(`${BACKEND_BASE_URL}/tts`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ text: plainText, hl, voice })
+                    });
+
+                    if (!res.ok) {
+                        const errText = await res.text();
+                        container.innerHTML = `
+                            <p style="color: var(--burgundy); margin-bottom: 0.75rem;">
+                                Error generating audio: <strong>${res.status} ${res.statusText}</strong>
+                            </p>
+                            <pre style="text-align:left; white-space:pre-wrap; background:var(--parchment); padding:0.75rem; border-radius:8px; max-height:200px; overflow:auto;">
 ${errText || "(no error body)"}
-                </pre>
-            `;
-            return;
-        }
+                            </pre>
+                        `;
+                        return;
+                    }
 
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        AppState.audioUrl = url;
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    AppState.audioUrl = url;
 
-        container.innerHTML = `
-            <div class="audio-player">
-                <audio controls style="width: 100%;" src="${url}">
-                    Your browser does not support the audio element.
-                </audio>
-                <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.7;">
-                    This is a short highlight version (~100 words). For the full 20-minute summary, use the browser read-aloud option.
-                </p>
-            </div>
-        `;
-    } catch (err) {
-        container.innerHTML = `
-            <p style="color: var(--burgundy); margin-bottom: 0.75rem;">
-                Network error while generating audio:
-            </p>
-            <pre style="text-align:left; white-space:pre-wrap; background:var(--parchment); padding:0.75rem; border-radius:8px; max-height:200px; overflow:auto;">
+                    container.innerHTML = `
+                        <div class="audio-player">
+                            <audio controls style="width: 100%;" src="${url}">
+                                Your browser does not support the audio element.
+                            </audio>
+                            <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.7;">
+                                You can change the voice and regenerate if you like a different tone.
+                            </p>
+                        </div>
+                    `;
+                } catch (err) {
+                    container.innerHTML = `
+                        <p style="color: var(--burgundy); margin-bottom: 0.75rem;">
+                            Network error while generating audio:
+                        </p>
+                        <pre style="text-align:left; white-space:pre-wrap; background:var(--parchment); padding:0.75rem; border-radius:8px; max-height:200px; overflow:auto;">
 ${err.message || err}
-            </pre>
-        `;
-    }
-},
-    markSummaryComplete() {
-                Views.showModal('Summary Completed! 🎉', 'Great job finishing this summary! The insights you\'ve gained are now part of your reading journey.');
+                        </pre>
+                    `;
+                }
+            },
+
+            markSummaryComplete() {
+                Views.showModal("Summary Completed! 🎉", "Great job finishing this summary! The insights you've gained are now part of your reading journey.");
             },
 
             library() {
@@ -1498,7 +1509,7 @@ ${err.message || err}
                                         </button>
                                     </div>
                                 </div>
-                            `).join('')}
+                            `).join("")}
                         </div>
                     </div>
                 `;
@@ -1506,7 +1517,7 @@ ${err.message || err}
 
             removeFromLibrary(bookId) {
                 AppState.removeBook(bookId);
-                Router.navigate('library');
+                Router.navigate("library");
             },
 
             settings() {
@@ -1523,13 +1534,13 @@ ${err.message || err}
                                 <strong>Age:</strong> ${user.age}
                             </div>
                             <div style="margin-bottom: 0.75rem;">
-                                <strong>Gender:</strong> ${user.gender || 'Not specified'}
+                                <strong>Gender:</strong> ${user.gender || "Not specified"}
                             </div>
                             <div style="margin-bottom: 0.75rem;">
-                                <strong>Preferred Genres:</strong> ${user.preferredGenres.join(', ')}
+                                <strong>Preferred Genres:</strong> ${user.preferredGenres.join(", ")}
                             </div>
                             <div>
-                                <strong>Goals:</strong> ${user.goals.join(', ')}
+                                <strong>Goals:</strong> ${user.goals.join(", ")}
                             </div>
                         </div>
 
@@ -1566,29 +1577,29 @@ ${err.message || err}
 
             clearMoodHistory() {
                 Views.showConfirmDialog(
-                    'Are you sure you want to clear your mood history? This action cannot be undone.',
+                    "Are you sure you want to clear your mood history? This action cannot be undone.",
                     () => {
                         AppState.moodHistory = [];
-                        Storage.removeItem('moodshelf_mood_history');
-                        Router.navigate('settings');
-                        Views.showModal('History Cleared', 'Your mood history has been cleared.');
+                        Storage.removeItem("moodshelf_mood_history");
+                        Router.navigate("settings");
+                        Views.showModal("History Cleared", "Your mood history has been cleared.");
                     }
                 );
             },
 
             resetApp() {
                 Views.showConfirmDialog(
-                    'Are you sure you want to reset all data? This will delete your profile, saved books, and mood history. This action cannot be undone.',
+                    "Are you sure you want to reset all data? This will delete your profile, saved books, and mood history. This action cannot be undone.",
                     () => {
                         AppState.reset();
-                        Router.navigate('welcome');
+                        Router.navigate("welcome");
                     }
                 );
             },
 
             showModal(title, message) {
-                const modal = document.createElement('div');
-                modal.className = 'modal-overlay';
+                const modal = document.createElement("div");
+                modal.className = "modal-overlay";
                 modal.innerHTML = `
                     <div class="modal-content">
                         <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: var(--burgundy);">${title}</h3>
@@ -1602,8 +1613,8 @@ ${err.message || err}
             },
 
             showConfirmDialog(message, onConfirm) {
-                const modal = document.createElement('div');
-                modal.className = 'modal-overlay';
+                const modal = document.createElement("div");
+                modal.className = "modal-overlay";
                 modal.innerHTML = `
                     <div class="modal-content">
                         <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: var(--burgundy);">Confirm Action</h3>
@@ -1622,9 +1633,9 @@ ${err.message || err}
             }
         };
 
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.addEventListener('click', () => {
+        document.addEventListener("DOMContentLoaded", () => {
+            document.querySelectorAll(".nav-item").forEach(item => {
+                item.addEventListener("click", () => {
                     Router.navigate(item.dataset.view);
                 });
             });
@@ -1633,19 +1644,19 @@ ${err.message || err}
             Router.navigate(AppState.currentView);
         });
 
-        // === PWA: service worker registration ===
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("./service-worker.js")
-      .then((reg) => {
-        console.log("Service worker registered:", reg.scope);
-      })
-      .catch((err) => {
-        console.error("Service worker registration failed:", err);
-      });
-  });
-}
+        // PWA: service worker
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", () => {
+                navigator.serviceWorker
+                    .register("./service-worker.js")
+                    .then(reg => {
+                        console.log("Service worker registered:", reg.scope);
+                    })
+                    .catch(err => {
+                        console.error("Service worker registration failed:", err);
+                    });
+            });
+        }
     </script>
 </body>
 </html>
