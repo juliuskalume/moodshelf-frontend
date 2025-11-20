@@ -12,14 +12,9 @@
   <!-- Fonts & libs -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Crimson+Pro:wght@300;400;600&display=swap"
-    rel="stylesheet"
-  />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Crimson+Pro:wght@300;400;600&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
-
   <!-- Firebase (compat for non-module script) -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
@@ -60,6 +55,11 @@
       overflow-x: hidden;
     }
 
+    .dark body {
+      background: var(--cream);
+      color: var(--charcoal);
+    }
+
     h1,
     h2,
     h3,
@@ -84,20 +84,8 @@
       position: fixed;
       inset: 0;
       opacity: 0.03;
-      background-image: repeating-linear-gradient(
-          45deg,
-          var(--burgundy) 0px,
-          var(--burgundy) 1px,
-          transparent 1px,
-          transparent 20px
-        ),
-        repeating-linear-gradient(
-          -45deg,
-          var(--burgundy) 0px,
-          var(--burgundy) 1px,
-          transparent 1px,
-          transparent 20px
-        );
+      background-image: repeating-linear-gradient(45deg, var(--burgundy) 0px, var(--burgundy) 1px, transparent 1px, transparent 20px),
+        repeating-linear-gradient(-45deg, var(--burgundy) 0px, var(--burgundy) 1px, transparent 1px, transparent 20px);
       pointer-events: none;
       z-index: 0;
     }
@@ -216,14 +204,7 @@
       width: 100%;
       height: 8px;
       border-radius: 5px;
-      background: linear-gradient(
-        to right,
-        #e74c3c,
-        #f39c12,
-        #f1c40f,
-        #2ecc71,
-        #27ae60
-      );
+      background: linear-gradient(to right, #e74c3c, #f39c12, #f1c40f, #2ecc71, #27ae60);
       outline: none;
       opacity: 0.9;
       transition: opacity 0.2s;
@@ -558,11 +539,7 @@
     }
 
     .disclaimer {
-      background: linear-gradient(
-        135deg,
-        rgba(107, 39, 55, 0.1),
-        rgba(74, 31, 41, 0.1)
-      );
+      background: linear-gradient(135deg, rgba(107, 39, 55, 0.1), rgba(74, 31, 41, 0.1));
       border-left: 4px solid var(--burgundy);
       padding: 1rem;
       border-radius: 8px;
@@ -571,11 +548,7 @@
     }
 
     .dark .disclaimer {
-      background: linear-gradient(
-        135deg,
-        rgba(157, 78, 92, 0.15),
-        rgba(107, 39, 55, 0.15)
-      );
+      background: linear-gradient(135deg, rgba(157, 78, 92, 0.15), rgba(107, 39, 55, 0.15));
     }
   </style>
 </head>
@@ -588,9 +561,7 @@
           <span>📚</span>
           <span>MoodShelf</span>
         </div>
-        <p style="font-size: 0.9rem; margin-top: 0.25rem; opacity: 0.9">
-          Your mood-based reading companion
-        </p>
+        <p style="font-size: 0.9rem; margin-top: 0.25rem; opacity: 0.9">Your mood-based reading companion</p>
       </header>
 
       <main id="mainContent" style="padding: 1.5rem; min-height: calc(100vh - 200px)">
@@ -622,15 +593,6 @@
     // === CONFIG: backend base URL ===
     const BACKEND_BASE_URL = "https://moodshelf-backend.onrender.com";
 
-    // Configure marked Markdown renderer
-    if (window.marked) {
-      marked.setOptions({
-        mangle: false,
-        headerIds: false,
-        breaks: true,
-      });
-    }
-
     // === Dark mode detection ===
     if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
       document.documentElement.classList.add("dark");
@@ -643,38 +605,38 @@
       }
     });
 
-    // === Storage wrapper (localStorage with safe fallbacks) ===
+    // === Persistent storage (localStorage) ===
     const Storage = {
       getItem(key) {
         try {
-          if (typeof localStorage === "undefined") return null;
-          return localStorage.getItem(key);
-        } catch (err) {
-          console.error("Error reading from localStorage:", err);
+          return window.localStorage.getItem(key);
+        } catch (e) {
+          console.warn("localStorage getItem failed:", e);
           return null;
         }
       },
       setItem(key, value) {
         try {
-          if (typeof localStorage === "undefined") return;
-          localStorage.setItem(key, value);
-        } catch (err) {
-          console.error("Error writing to localStorage:", err);
+          window.localStorage.setItem(key, value);
+        } catch (e) {
+          console.warn("localStorage setItem failed:", e);
         }
       },
       removeItem(key) {
         try {
-          if (typeof localStorage === "undefined") return;
-          localStorage.removeItem(key);
-        } catch (err) {
-          console.error("Error removing from localStorage:", err);
+          window.localStorage.removeItem(key);
+        } catch (e) {
+          console.warn("localStorage removeItem failed:", e);
         }
       },
       clear() {
-        // Only clear MoodShelf keys, not the entire origin
-        ["moodshelf_user", "moodshelf_saved_books", "moodshelf_mood_history"].forEach((key) =>
-          Storage.removeItem(key)
-        );
+        try {
+          window.localStorage.removeItem("moodshelf_user");
+          window.localStorage.removeItem("moodshelf_saved_books");
+          window.localStorage.removeItem("moodshelf_mood_history");
+        } catch (e) {
+          console.warn("localStorage clear failed:", e);
+        }
       },
     };
 
@@ -695,12 +657,11 @@
 
     // === App state ===
     const AppState = {
-      user: null, // onboarding profile
-      authUser: null, // Firebase user
+      user: null, // onboarding profile (age, goals...)
+      authUser: null, // Firebase user (for multi-device sync)
       currentView: "welcome",
       currentMoodCheckIn: null,
       recommendations: [],
-      recommendationsById: {},
       savedBooks: [],
       currentBook: null,
       currentSummary: null,
@@ -720,9 +681,14 @@
         this.moodHistory = JSON.parse(Storage.getItem("moodshelf_mood_history") || "[]");
       },
 
-      saveUser(userData) {
+      async saveUser(userData) {
         this.user = userData;
         Storage.setItem("moodshelf_user", JSON.stringify(userData));
+
+        // If the user is signed in, sync the profile to Firestore
+        if (this.authUser) {
+          await BackendSync.saveUserProfile(userData);
+        }
       },
 
       async saveMoodCheckIn(moodData) {
@@ -765,8 +731,6 @@
         this.currentSummary = null;
         this.audioUrl = null;
         this.currentView = "welcome";
-        this.recommendations = [];
-        this.recommendationsById = {};
       },
     };
 
@@ -775,32 +739,56 @@
       async loadUserData(user) {
         try {
           const uid = user.uid;
-          // Load saved books
-          const booksSnap = await db
-            .collection("users")
-            .doc(uid)
-            .collection("savedBooks")
-            .get();
+          const userDocRef = db.collection("users").doc(uid);
+
+          // 1) Load profile
+          const userDoc = await userDocRef.get();
+          if (userDoc.exists) {
+            const profile = userDoc.data();
+            if (profile && Object.keys(profile).length > 0) {
+              AppState.user = profile;
+              Storage.setItem("moodshelf_user", JSON.stringify(profile));
+            }
+          } else if (AppState.user) {
+            // No remote profile yet, but we have a local one → push it up
+            await userDocRef.set(AppState.user, { merge: true });
+          }
+
+          // 2) Load saved books
+          const booksSnap = await userDocRef.collection("savedBooks").get();
           const remoteBooks = booksSnap.docs.map((doc) => doc.data());
           if (remoteBooks.length) {
             AppState.savedBooks = remoteBooks;
             Storage.setItem("moodshelf_saved_books", JSON.stringify(remoteBooks));
           }
 
-          // Load mood history
-          const moodsSnap = await db
-            .collection("users")
-            .doc(uid)
-            .collection("moodHistory")
-            .orderBy("timestamp", "asc")
-            .get();
+          // 3) Load mood history
+          const moodsSnap = await userDocRef.collection("moodHistory").orderBy("timestamp", "asc").get();
           const remoteMoods = moodsSnap.docs.map((doc) => doc.data());
           if (remoteMoods.length) {
             AppState.moodHistory = remoteMoods;
             Storage.setItem("moodshelf_mood_history", JSON.stringify(remoteMoods));
           }
+
+          // If profile exists and we are on welcome/onboarding, jump to check-in
+          if (
+            AppState.user &&
+            (AppState.currentView === "welcome" || AppState.currentView === "onboarding")
+          ) {
+            Router.navigate("check-in");
+          }
         } catch (err) {
           console.error("Error loading user data from Firestore:", err);
+        }
+      },
+
+      async saveUserProfile(profile) {
+        if (!AppState.authUser) return;
+        try {
+          const uid = AppState.authUser.uid;
+          await db.collection("users").doc(uid).set(profile, { merge: true });
+        } catch (err) {
+          console.error("Error saving user profile to Firestore:", err);
         }
       },
 
@@ -808,15 +796,10 @@
         if (!AppState.authUser) return;
         try {
           const uid = AppState.authUser.uid;
-          await db
-            .collection("users")
-            .doc(uid)
-            .collection("savedBooks")
-            .doc(book.id)
-            .set({
-              ...book,
-              savedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            });
+          await db.collection("users").doc(uid).collection("savedBooks").doc(book.id).set({
+            ...book,
+            savedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          });
         } catch (err) {
           console.error("Error saving book to Firestore:", err);
         }
@@ -826,12 +809,7 @@
         if (!AppState.authUser) return;
         try {
           const uid = AppState.authUser.uid;
-          await db
-            .collection("users")
-            .doc(uid)
-            .collection("savedBooks")
-            .doc(bookId)
-            .delete();
+          await db.collection("users").doc(uid).collection("savedBooks").doc(bookId).delete();
         } catch (err) {
           console.error("Error removing book from Firestore:", err);
         }
@@ -841,14 +819,10 @@
         if (!AppState.authUser) return;
         try {
           const uid = AppState.authUser.uid;
-          await db
-            .collection("users")
-            .doc(uid)
-            .collection("moodHistory")
-            .add({
-              ...moodData,
-              timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-            });
+          await db.collection("users").doc(uid).collection("moodHistory").add({
+            ...moodData,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          });
         } catch (err) {
           console.error("Error saving mood to Firestore:", err);
         }
@@ -872,6 +846,11 @@
     // === Router ===
     const Router = {
       navigate(view, data = {}) {
+        // If user is already signed in with a profile, never show onboarding
+        if (view === "onboarding" && AppState.authUser && AppState.user) {
+          view = "check-in";
+        }
+
         AppState.currentView = view;
 
         document.querySelectorAll(".nav-item").forEach((item) => {
@@ -949,11 +928,19 @@
               MoodShelf provides reading suggestions based on your mood and goals. This app is <strong>not a substitute for professional mental health care or therapy</strong>. If you're experiencing a crisis or need professional support, please contact a qualified healthcare provider.
             </div>
 
-            <button class="btn btn-primary" onclick="Router.navigate('onboarding')" style="animation: fadeInUp 0.6s ease-out 0.4s; animation-fill-mode: both;">
+            <button class="btn btn-primary" onclick="Views.handleGetStarted()" style="animation: fadeInUp 0.6s ease-out 0.4s; animation-fill-mode: both;">
               Get Started
             </button>
           </div>
         `;
+      },
+
+      handleGetStarted() {
+        if (AppState.authUser && AppState.user) {
+          Router.navigate("check-in");
+        } else {
+          Router.navigate("onboarding");
+        }
       },
 
       onboarding() {
@@ -1086,22 +1073,15 @@
         document.getElementById(`step${step}`).classList.remove("hidden");
       },
 
-      completeOnboarding() {
+      async completeOnboarding() {
         const age = document.getElementById("age").value;
         const gender = document.getElementById("gender").value;
 
-        const genres = Array.from(document.querySelectorAll("#genreCheckboxes input:checked")).map(
-          (cb) => cb.value
-        );
-        const goals = Array.from(document.querySelectorAll("#goalsCheckboxes input:checked")).map(
-          (cb) => cb.value
-        );
+        const genres = Array.from(document.querySelectorAll("#genreCheckboxes input:checked")).map((cb) => cb.value);
+        const goals = Array.from(document.querySelectorAll("#goalsCheckboxes input:checked")).map((cb) => cb.value);
 
         if (!age || genres.length === 0 || goals.length === 0) {
-          Views.showModal(
-            "Please Complete All Steps",
-            "Please make sure to enter your age and select at least one genre and one goal."
-          );
+          Views.showModal("Please Complete All Steps", "Please make sure to enter your age and select at least one genre and one goal.");
           return;
         }
 
@@ -1113,7 +1093,7 @@
           createdAt: new Date().toISOString(),
         };
 
-        AppState.saveUser(userData);
+        await AppState.saveUser(userData);
         Router.navigate("check-in");
       },
 
@@ -1196,16 +1176,11 @@
 
       async submitCheckIn() {
         const moodScore = parseInt(document.getElementById("moodSlider").value);
-        const selectedTags = Array.from(document.querySelectorAll(".mood-tag.selected")).map(
-          (tag) => tag.dataset.tag
-        );
+        const selectedTags = Array.from(document.querySelectorAll(".mood-tag.selected")).map((tag) => tag.dataset.tag);
         const freeText = document.getElementById("freeText").value.trim();
 
         if (selectedTags.length === 0) {
-          Views.showModal(
-            "Select Your Mood",
-            "Please select at least one mood tag to help us understand how you're feeling."
-          );
+          Views.showModal("Select Your Mood", "Please select at least one mood tag to help us understand how you're feeling.");
           return;
         }
 
@@ -1217,9 +1192,6 @@
         };
 
         await AppState.saveMoodCheckIn(moodData);
-        // Clear old recommendations when mood changes
-        AppState.recommendations = [];
-        AppState.recommendationsById = {};
         Router.navigate("recommendations");
       },
 
@@ -1310,12 +1282,6 @@ ${text}
           }
 
           AppState.recommendations = recommendations;
-          // Build quick lookup map
-          AppState.recommendationsById = {};
-          recommendations.forEach((b) => {
-            if (b && b.id) AppState.recommendationsById[b.id] = b;
-          });
-
           Views.displayRecommendations(recommendations);
         } catch (err) {
           container.innerHTML = `
@@ -1342,8 +1308,9 @@ ${err.message || err}
 
         container.innerHTML = recommendations
           .map((book) => {
+            const safeBook = JSON.stringify(book).replace(/'/g, "&apos;");
             return `
-              <div class="book-card" onclick="Views.openBookFromRecommendations('${book.id}')">
+              <div class="book-card" onclick='Router.navigate("book-detail", {book: ${safeBook}})'>
                 <div style="display: flex; gap: 1rem;">
                   <img src="${book.coverUrl}" alt="${book.title}" class="book-cover" onerror="this.src='https://via.placeholder.com/80x120?text=Book'" />
                   <div style="flex: 1;">
@@ -1352,18 +1319,14 @@ ${err.message || err}
                     <p style="font-size: 0.95rem; margin-bottom: 0.5rem;">${book.explanation}</p>
                     <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                       <span style="background: var(--parchment); padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85rem;">${book.moodAlignment}</span>
-                      ${
-                        Array.isArray(book.tags)
-                          ? book.tags
-                              .slice(0, 2)
-                              .map(
-                                (tag) => `
+                      ${book.tags
+                        .slice(0, 2)
+                        .map(
+                          (tag) => `
                           <span style="background: var(--parchment); padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85rem;">${tag}</span>
                         `
-                              )
-                              .join("")
-                          : ""
-                      }
+                        )
+                        .join("")}
                     </div>
                   </div>
                 </div>
@@ -1375,7 +1338,6 @@ ${err.message || err}
 
       async refreshRecommendations() {
         AppState.recommendations = [];
-        AppState.recommendationsById = {};
         const container = document.getElementById("recommendationsContainer");
         container.innerHTML = `
           <div class="loading">
@@ -1386,34 +1348,9 @@ ${err.message || err}
         await Views.fetchRecommendations();
       },
 
-      openBookFromRecommendations(bookId) {
-        const book = AppState.recommendationsById[bookId];
-        if (!book) {
-          Views.showModal("Book not found", "Please refresh your recommendations and try again.");
-          return;
-        }
-        Router.navigate("book-detail", { book });
-      },
-
-      openBookFromLibrary(bookId) {
-        const book = AppState.savedBooks.find((b) => b.id === bookId);
-        if (!book) {
-          Views.showModal("Book not found", "This book is no longer in your library.");
-          return;
-        }
-        Router.navigate("book-detail", { book });
-      },
-
-      findBookById(bookId) {
-        return (
-          AppState.savedBooks.find((b) => b.id === bookId) ||
-          AppState.recommendationsById[bookId] ||
-          AppState.recommendations.find((b) => b.id === bookId)
-        );
-      },
-
       bookDetail(book) {
         const isSaved = AppState.savedBooks.some((b) => b.id === book.id);
+        const safeBook = JSON.stringify(book).replace(/'/g, "&apos;");
 
         return `
           <div style="max-width: 500px; margin: 0 auto;">
@@ -1444,10 +1381,10 @@ ${err.message || err}
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 1rem;">
-              <button class="btn btn-primary" onclick="Views.openSummaryForBook('${book.id}')">
+              <button class="btn btn-primary" onclick='Router.navigate("summary", {book: ${safeBook}})'>
                 📖 Read Summary
               </button>
-              <button class="btn btn-secondary" onclick="Views.saveBookToLibraryById('${book.id}')">
+              <button class="btn btn-secondary" onclick="Views.saveBookToLibrary(${safeBook})">
                 ${isSaved ? "✓ Saved to Library" : "💾 Save to Library"}
               </button>
             </div>
@@ -1455,17 +1392,7 @@ ${err.message || err}
         `;
       },
 
-      async saveBookToLibraryById(bookId) {
-        const book =
-          AppState.savedBooks.find((b) => b.id === bookId) ||
-          AppState.recommendationsById[bookId] ||
-          AppState.recommendations.find((b) => b.id === bookId);
-
-        if (!book) {
-          Views.showModal("Book not found", "Please refresh your recommendations or library and try again.");
-          return;
-        }
-
+      async saveBookToLibrary(book) {
         await AppState.saveBook(book);
 
         if (!AppState.authUser) {
@@ -1482,28 +1409,11 @@ ${err.message || err}
         Router.navigate("book-detail", { book });
       },
 
-      openSummaryForBook(bookId) {
-        const book = Views.findBookById(bookId);
-        if (!book) {
-          Views.showModal("Book not found", "Please refresh and try again.");
-          return;
-        }
-        Router.navigate("summary", { book });
-      },
-
-      backToBookDetail(bookId) {
-        const book = Views.findBookById(bookId);
-        if (!book) {
-          Router.navigate("recommendations");
-          return;
-        }
-        Router.navigate("book-detail", { book });
-      },
-
       summary(book) {
+        const safeBook = JSON.stringify(book).replace(/'/g, "&apos;");
         return `
           <div style="max-width: 600px; margin: 0 auto;">
-            <button class="btn btn-ghost mb-2" onclick="Views.backToBookDetail('${book.id}')">← Back to Book</button>
+            <button class="btn btn-ghost mb-2" onclick='Router.navigate("book-detail", {book: ${safeBook}})'>← Back to Book</button>
 
             <h2 style="font-size: 1.75rem; margin-bottom: 0.5rem; color: var(--burgundy);">${book.title}</h2>
             <p style="font-size: 1rem; opacity: 0.7; margin-bottom: 1.5rem;">by ${book.author}</p>
@@ -1576,9 +1486,7 @@ ${err.message || err}
                 <pre style="text-align:left; white-space:pre-wrap; background:var(--parchment); padding:0.75rem; border-radius:8px; max-height:200px; overflow:auto;">
 ${text || "(no error body)"}
                 </pre>
-                <button class="btn btn-primary mt-2" onclick='Views.initSummary(${JSON.stringify(
-                  book
-                ).replace(/'/g, "&apos;")})'>
+                <button class="btn btn-primary mt-2" onclick='Views.initSummary(${JSON.stringify(book).replace(/'/g, "&apos;")})'>
                   Try Again
                 </button>
               </div>
@@ -1619,9 +1527,7 @@ ${text}
 
           AppState.currentSummary = summary;
 
-          const html = marked.parse(summary);
-          const safeHtml = window.DOMPurify ? DOMPurify.sanitize(html) : html;
-          summaryContent.innerHTML = `<div class="summary-content">${safeHtml}</div>`;
+          summaryContent.innerHTML = `<div class="summary-content">${marked.parse(summary)}</div>`;
           progressFill.style.width = "100%";
           document.getElementById("summaryActions").classList.remove("hidden");
         } catch (err) {
@@ -1633,9 +1539,7 @@ ${text}
               <pre style="text-align:left; white-space:pre-wrap; background:var(--parchment); padding:0.75rem; border-radius:8px; max-height:200px; overflow:auto;">
 ${err.message || err}
               </pre>
-              <button class="btn btn-primary mt-2" onclick='Views.initSummary(${JSON.stringify(
-                book
-              ).replace(/'/g, "&apos;")})'>
+              <button class="btn btn-primary mt-2" onclick='Views.initSummary(${JSON.stringify(book).replace(/'/g, "&apos;")})'>
                 Try Again
               </button>
             </div>
@@ -1658,18 +1562,12 @@ ${err.message || err}
       // Full summary via browser TTS
       playBrowserTTS() {
         if (!AppState.currentSummary) {
-          Views.showModal(
-            "No Summary Available",
-            "Please wait for the summary to finish generating first."
-          );
+          Views.showModal("No Summary Available", "Please wait for the summary to finish generating first.");
           return;
         }
 
         if (!("speechSynthesis" in window)) {
-          Views.showModal(
-            "Not Supported",
-            "Your browser does not support text-to-speech. Try a modern browser like Chrome, Edge, Safari, or Firefox."
-          );
+          Views.showModal("Not Supported", "Your browser does not support text-to-speech. Try a modern browser like Chrome, Edge, Safari, or Firefox.");
           return;
         }
 
@@ -1688,19 +1586,13 @@ ${err.message || err}
 
         synth.speak(utterance);
 
-        Views.showModal(
-          "Reading Started",
-          "Your browser is now reading the summary. Tap the button again to stop it."
-        );
+        Views.showModal("Reading Started", "Your browser is now reading the summary. Tap the button again to stop it.");
       },
 
-      // Full summary via backend /tts
+      // Full summary via backend /tts (VoiceRSS behind the scenes)
       async generateAudioSummaryViaApi() {
         if (!AppState.currentSummary) {
-          Views.showModal(
-            "No Summary Available",
-            "Please wait for the summary to finish generating first."
-          );
+          Views.showModal("No Summary Available", "Please wait for the summary to finish generating first.");
           return;
         }
 
@@ -1786,10 +1678,7 @@ ${err.message || err}
       },
 
       markSummaryComplete() {
-        Views.showModal(
-          "Summary Completed! 🎉",
-          "Nice work. The insights you've gained are now part of your reading journey."
-        );
+        Views.showModal("Summary Completed! 🎉", "Nice work. The insights you've gained are now part of your reading journey.");
       },
 
       library() {
@@ -1816,8 +1705,9 @@ ${err.message || err}
             <div>
               ${savedBooks
                 .map((book) => {
+                  const safeBook = JSON.stringify(book).replace(/'/g, "&apos;");
                   return `
-                  <div class="book-card" onclick="Views.openBookFromLibrary('${book.id}')">
+                  <div class="book-card" onclick='Router.navigate("book-detail", {book: ${safeBook}})'>
                     <div style="display: flex; gap: 1rem; align-items: start;">
                       <img src="${book.coverUrl}" alt="${book.title}" class="book-cover" onerror="this.src='https://via.placeholder.com/80x120?text=Book'" />
                       <div style="flex: 1;">
@@ -1884,9 +1774,7 @@ ${err.message || err}
               ${
                 authUser
                   ? `
-                <p style="margin-bottom: 0.5rem;"><strong>Signed in as:</strong> ${
-                  authUser.email || authUser.displayName || "Account"
-                }</p>
+                <p style="margin-bottom: 0.5rem;"><strong>Signed in as:</strong> ${authUser.email || authUser.displayName || "Account"}</p>
                 <p style="margin-bottom: 1rem; font-size: 0.9rem; opacity: 0.8;">
                   Your library and mood history are synced across devices when you're signed in.
                 </p>
@@ -1937,16 +1825,13 @@ ${err.message || err}
       },
 
       async clearMoodHistory() {
-        Views.showConfirmDialog(
-          "Are you sure you want to clear your mood history? This action cannot be undone.",
-          async () => {
-            AppState.moodHistory = [];
-            Storage.removeItem("moodshelf_mood_history");
-            await BackendSync.clearMoodHistory();
-            Router.navigate("settings");
-            Views.showModal("History Cleared", "Your mood history has been cleared.");
-          }
-        );
+        Views.showConfirmDialog("Are you sure you want to clear your mood history? This action cannot be undone.", async () => {
+          AppState.moodHistory = [];
+          Storage.removeItem("moodshelf_mood_history");
+          await BackendSync.clearMoodHistory();
+          Router.navigate("settings");
+          Views.showModal("History Cleared", "Your mood history has been cleared.");
+        });
       },
 
       resetApp() {
@@ -2072,10 +1957,7 @@ ${err.message || err}
           const provider = new firebase.auth.GoogleAuthProvider();
           await auth.signInWithPopup(provider);
           Views.closeAllModals();
-          Views.showModal(
-            "Signed In",
-            "You're now signed in. Your shelf and mood history will sync across devices."
-          );
+          Views.showModal("Signed In", "You're now signed in. Your shelf and mood history will sync across devices.");
         } catch (err) {
           Views.showModal("Sign-In Error", err.message || "Could not complete Google sign-in.");
         }
@@ -2093,15 +1975,9 @@ ${err.message || err}
         try {
           await auth.signInWithEmailAndPassword(email, password);
           Views.closeAllModals();
-          Views.showModal(
-            "Signed In",
-            "You're now signed in. Your shelf and mood history will sync across devices."
-          );
+          Views.showModal("Signed In", "You're now signed in. Your shelf and mood history will sync across devices.");
         } catch (err) {
-          Views.showModal(
-            "Sign-In Error",
-            err.message || "Could not sign in with email and password."
-          );
+          Views.showModal("Sign-In Error", err.message || "Could not sign in with email and password.");
         }
       },
 
@@ -2117,10 +1993,7 @@ ${err.message || err}
         try {
           await auth.createUserWithEmailAndPassword(email, password);
           Views.closeAllModals();
-          Views.showModal(
-            "Account Created",
-            "Your account has been created and you're now signed in."
-          );
+          Views.showModal("Account Created", "Your account has been created and you're now signed in.");
         } catch (err) {
           Views.showModal("Sign-Up Error", err.message || "Could not create account.");
         }
