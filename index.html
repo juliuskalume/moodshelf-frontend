@@ -15,6 +15,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Crimson+Pro:wght@300;400;600&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
   <!-- Firebase (compat for non-module script) -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
@@ -84,7 +85,8 @@
       position: fixed;
       inset: 0;
       opacity: 0.03;
-      background-image: repeating-linear-gradient(45deg, var(--burgundy) 0px, var(--burgundy) 1px, transparent 1px, transparent 20px),
+      background-image:
+        repeating-linear-gradient(45deg, var(--burgundy) 0px, var(--burgundy) 1px, transparent 1px, transparent 20px),
         repeating-linear-gradient(-45deg, var(--burgundy) 0px, var(--burgundy) 1px, transparent 1px, transparent 20px);
       pointer-events: none;
       z-index: 0;
@@ -371,12 +373,8 @@
     }
 
     @keyframes fadeIn {
-      from {
-        opacity: 0;
-      }
-      to {
-        opacity: 1;
-      }
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     .modal-content {
@@ -445,46 +443,19 @@
       display: none !important;
     }
 
-    .text-center {
-      text-align: center;
-    }
-
-    .mt-1 {
-      margin-top: 0.5rem;
-    }
-    .mt-2 {
-      margin-top: 1rem;
-    }
-    .mt-3 {
-      margin-top: 1.5rem;
-    }
-    .mt-4 {
-      margin-top: 2rem;
-    }
-    .mb-1 {
-      margin-bottom: 0.5rem;
-    }
-    .mb-2 {
-      margin-bottom: 1rem;
-    }
-    .mb-3 {
-      margin-bottom: 1.5rem;
-    }
-    .mb-4 {
-      margin-bottom: 2rem;
-    }
-    .p-1 {
-      padding: 0.5rem;
-    }
-    .p-2 {
-      padding: 1rem;
-    }
-    .p-3 {
-      padding: 1.5rem;
-    }
-    .p-4 {
-      padding: 2rem;
-    }
+    .text-center { text-align: center; }
+    .mt-1 { margin-top: 0.5rem; }
+    .mt-2 { margin-top: 1rem; }
+    .mt-3 { margin-top: 1.5rem; }
+    .mt-4 { margin-top: 2rem; }
+    .mb-1 { margin-bottom: 0.5rem; }
+    .mb-2 { margin-bottom: 1rem; }
+    .mb-3 { margin-bottom: 1.5rem; }
+    .mb-4 { margin-bottom: 2rem; }
+    .p-1 { padding: 0.5rem; }
+    .p-2 { padding: 1rem; }
+    .p-3 { padding: 1.5rem; }
+    .p-4 { padding: 2rem; }
 
     .summary-content h1,
     .summary-content h2,
@@ -561,7 +532,9 @@
           <span>📚</span>
           <span>MoodShelf</span>
         </div>
-        <p style="font-size: 0.9rem; margin-top: 0.25rem; opacity: 0.9">Your mood-based reading companion</p>
+        <p style="font-size: 0.9rem; margin-top: 0.25rem; opacity: 0.9">
+          Your mood-based reading companion
+        </p>
       </header>
 
       <main id="mainContent" style="padding: 1.5rem; min-height: calc(100vh - 200px)">
@@ -605,40 +578,56 @@
       }
     });
 
-    // === Persistent storage (localStorage) ===
+    // === Simple in-memory storage wrapper (overridden by real localStorage-like) ===
     const Storage = {
+      data: {},
+      init() {
+        this.data = {
+          user: null,
+          savedBooks: [],
+          moodHistory: [],
+        };
+      },
       getItem(key) {
+        // Prefer real localStorage if available
         try {
-          return window.localStorage.getItem(key);
-        } catch (e) {
-          console.warn("localStorage getItem failed:", e);
-          return null;
-        }
+          if (typeof localStorage !== "undefined") {
+            return localStorage.getItem(key);
+          }
+        } catch (e) {}
+        return this.data[key] ? JSON.stringify(this.data[key]) : null;
       },
       setItem(key, value) {
         try {
-          window.localStorage.setItem(key, value);
-        } catch (e) {
-          console.warn("localStorage setItem failed:", e);
-        }
+          if (typeof localStorage !== "undefined") {
+            localStorage.setItem(key, value);
+            return;
+          }
+        } catch (e) {}
+        this.data[key] = JSON.parse(value);
       },
       removeItem(key) {
         try {
-          window.localStorage.removeItem(key);
-        } catch (e) {
-          console.warn("localStorage removeItem failed:", e);
-        }
+          if (typeof localStorage !== "undefined") {
+            localStorage.removeItem(key);
+          }
+        } catch (e) {}
+        delete this.data[key];
       },
       clear() {
         try {
-          window.localStorage.removeItem("moodshelf_user");
-          window.localStorage.removeItem("moodshelf_saved_books");
-          window.localStorage.removeItem("moodshelf_mood_history");
-        } catch (e) {
-          console.warn("localStorage clear failed:", e);
-        }
+          if (typeof localStorage !== "undefined") {
+            localStorage.clear();
+          }
+        } catch (e) {}
+        this.data = {
+          user: null,
+          savedBooks: [],
+          moodHistory: [],
+        };
       },
     };
+    Storage.init();
 
     // === Firebase init ===
     const firebaseConfig = {
@@ -655,10 +644,15 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
+    // Small helper
+    async function delay(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
     // === App state ===
     const AppState = {
-      user: null, // onboarding profile (age, goals...)
-      authUser: null, // Firebase user (for multi-device sync)
+      user: null,        // onboarding profile (age, goals...)
+      authUser: null,    // Firebase user
       currentView: "welcome",
       currentMoodCheckIn: null,
       recommendations: [],
@@ -672,6 +666,8 @@
         this.loadFromStorage();
         if (this.user) {
           this.currentView = "check-in";
+        } else {
+          this.currentView = "welcome";
         }
       },
 
@@ -685,9 +681,14 @@
         this.user = userData;
         Storage.setItem("moodshelf_user", JSON.stringify(userData));
 
-        // If the user is signed in, sync the profile to Firestore
-        if (this.authUser) {
-          await BackendSync.saveUserProfile(userData);
+        // Also sync profile to Firestore if signed in
+        try {
+          if (this.authUser) {
+            const uid = this.authUser.uid;
+            await db.collection("users").doc(uid).set(userData, { merge: true });
+          }
+        } catch (err) {
+          console.error("Error saving profile to Firestore:", err);
         }
       },
 
@@ -763,14 +764,17 @@
           }
 
           // 3) Load mood history
-          const moodsSnap = await userDocRef.collection("moodHistory").orderBy("timestamp", "asc").get();
+          const moodsSnap = await userDocRef
+            .collection("moodHistory")
+            .orderBy("timestamp", "asc")
+            .get();
           const remoteMoods = moodsSnap.docs.map((doc) => doc.data());
           if (remoteMoods.length) {
             AppState.moodHistory = remoteMoods;
             Storage.setItem("moodshelf_mood_history", JSON.stringify(remoteMoods));
           }
 
-          // If profile exists and we are on welcome/onboarding, jump to check-in
+          // If profile exists and we are currently on welcome/onboarding, jump to check-in
           if (
             AppState.user &&
             (AppState.currentView === "welcome" || AppState.currentView === "onboarding")
@@ -782,24 +786,19 @@
         }
       },
 
-      async saveUserProfile(profile) {
-        if (!AppState.authUser) return;
-        try {
-          const uid = AppState.authUser.uid;
-          await db.collection("users").doc(uid).set(profile, { merge: true });
-        } catch (err) {
-          console.error("Error saving user profile to Firestore:", err);
-        }
-      },
-
       async saveBook(book) {
         if (!AppState.authUser) return;
         try {
           const uid = AppState.authUser.uid;
-          await db.collection("users").doc(uid).collection("savedBooks").doc(book.id).set({
-            ...book,
-            savedAt: firebase.firestore.FieldValue.serverTimestamp(),
-          });
+          await db
+            .collection("users")
+            .doc(uid)
+            .collection("savedBooks")
+            .doc(book.id)
+            .set({
+              ...book,
+              savedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            });
         } catch (err) {
           console.error("Error saving book to Firestore:", err);
         }
@@ -809,7 +808,12 @@
         if (!AppState.authUser) return;
         try {
           const uid = AppState.authUser.uid;
-          await db.collection("users").doc(uid).collection("savedBooks").doc(bookId).delete();
+          await db
+            .collection("users")
+            .doc(uid)
+            .collection("savedBooks")
+            .doc(bookId)
+            .delete();
         } catch (err) {
           console.error("Error removing book from Firestore:", err);
         }
@@ -819,10 +823,14 @@
         if (!AppState.authUser) return;
         try {
           const uid = AppState.authUser.uid;
-          await db.collection("users").doc(uid).collection("moodHistory").add({
-            ...moodData,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-          });
+          await db
+            .collection("users")
+            .doc(uid)
+            .collection("moodHistory")
+            .add({
+              ...moodData,
+              timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            });
         } catch (err) {
           console.error("Error saving mood to Firestore:", err);
         }
@@ -846,8 +854,8 @@
     // === Router ===
     const Router = {
       navigate(view, data = {}) {
-        // If user is already signed in with a profile, never show onboarding
-        if (view === "onboarding" && AppState.authUser && AppState.user) {
+        // Guard: if user profile already exists, never go back to onboarding
+        if (view === "onboarding" && AppState.user) {
           view = "check-in";
         }
 
@@ -928,157 +936,157 @@
               MoodShelf provides reading suggestions based on your mood and goals. This app is <strong>not a substitute for professional mental health care or therapy</strong>. If you're experiencing a crisis or need professional support, please contact a qualified healthcare provider.
             </div>
 
-            <button class="btn btn-primary" onclick="Views.handleGetStarted()" style="animation: fadeInUp 0.6s ease-out 0.4s; animation-fill-mode: both;">
-              Get Started
-            </button>
+            <div style="display:flex; flex-direction:column; gap:0.75rem; margin-top:1.5rem; animation: fadeInUp 0.6s ease-out 0.4s; animation-fill-mode: both;">
+              <button class="btn btn-primary" onclick="Router.navigate('onboarding')">
+                Get Started
+              </button>
+              <button
+                class="btn btn-secondary"
+                onclick="Views.showAuthModal()"
+              >
+                I already have an account
+              </button>
+            </div>
           </div>
         `;
       },
 
-      handleGetStarted() {
-        if (AppState.authUser && AppState.user) {
-          Router.navigate("check-in");
-        } else {
-          Router.navigate("onboarding");
-        }
+      onboarding() {
+        return `
+          <div style="max-width: 500px; margin: 0 auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+              <h2 style="font-size: 2rem; color: var(--burgundy);">Let's Get to Know You</h2>
+              <button
+                type="button"
+                class="btn-ghost"
+                style="font-size: 0.85rem; text-decoration: underline; padding: 0; border: none; background: none;"
+                onclick="Views.showAuthModal()"
+              >
+                Already have an account?
+              </button>
+            </div>
+
+            <p style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 1.5rem;">
+              If you've used MoodShelf before, you can sign in to restore your profile and library.
+            </p>
+
+            <form id="onboardingForm" onsubmit="return false;">
+              <div id="step1" class="onboarding-step">
+                <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">Basic Information</h3>
+
+                <div class="form-group">
+                  <label class="form-label">Your Age *</label>
+                  <input type="number" class="form-input" id="age" min="13" max="120" required />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Gender (Optional)</label>
+                  <select class="form-select" id="gender">
+                    <option value="">Prefer not to say</option>
+                    <option value="female">Female</option>
+                    <option value="male">Male</option>
+                    <option value="non-binary">Non-binary</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                <button type="button" class="btn btn-primary" style="width: 100%;" onclick="Views.nextOnboardingStep(2)">
+                  Continue
+                </button>
+              </div>
+
+              <div id="step2" class="onboarding-step hidden">
+                <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">Reading Preferences</h3>
+
+                <div class="form-group">
+                  <label class="form-label">What genres interest you? (Select all that apply)</label>
+                  <div class="checkbox-group" id="genreCheckboxes">
+                    <label class="checkbox-item">
+                      <input type="checkbox" value="self-help" /> Self-Help & Personal Development
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" value="business" /> Business & Career
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" value="psychology" /> Psychology
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" value="fiction" /> Fiction
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" value="biography" /> Biography & Memoir
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" value="health" /> Health & Wellness
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" value="creativity" /> Creativity & Arts
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" value="philosophy" /> Philosophy & Spirituality
+                    </label>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                  <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="Views.nextOnboardingStep(1)">
+                    Back
+                  </button>
+                  <button type="button" class="btn btn-primary" style="flex: 1;" onclick="Views.nextOnboardingStep(3)">
+                    Continue
+                  </button>
+                </div>
+              </div>
+
+              <div id="step3" class="onboarding-step hidden">
+                <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">Your Goals</h3>
+
+                <div class="form-group">
+                  <label class="form-label">What would you like to work on? (Select all that apply)</label>
+                  <div class="checkbox-group" id="goalsCheckboxes">
+                    <label class="checkbox-item">
+                      <input type="checkbox" value="focus" /> Improve focus and discipline
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" value="confidence" /> Boost confidence
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" value="anxiety" /> Reduce anxiety/stress
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" value="academic" /> Do better in school/studies
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" value="social" /> Develop social skills
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" value="career" /> Career and money
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" value="creativity" /> Creativity and passion
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" value="relationships" /> Improve relationships
+                    </label>
+                    <label class="checkbox-item">
+                      <input type="checkbox" value="health" /> Physical/mental health
+                    </label>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                  <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="Views.nextOnboardingStep(2)">
+                    Back
+                  </button>
+                  <button type="button" class="btn btn-primary" style="flex: 1;" onclick="Views.completeOnboarding()">
+                    Complete Setup
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        `;
       },
-
-       onboarding() {
-    return `
-      <div style="max-width: 500px; margin: 0 auto;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-          <h2 style="font-size: 2rem; color: var(--burgundy);">Let's Get to Know You</h2>
-          <button
-            type="button"
-            class="btn-ghost"
-            style="font-size: 0.85rem; text-decoration: underline; padding: 0; border: none; background: none;"
-            onclick="Views.showAuthModal()"
-          >
-            Already have an account?
-          </button>
-        </div>
-
-        <p style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 1.5rem;">
-          If you've used MoodShelf before, you can sign in to restore your profile and library.
-        </p>
-
-        <form id="onboardingForm" onsubmit="return false;">
-          <div id="step1" class="onboarding-step">
-            <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">Basic Information</h3>
-
-            <div class="form-group">
-              <label class="form-label">Your Age *</label>
-              <input type="number" class="form-input" id="age" min="13" max="120" required />
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Gender (Optional)</label>
-              <select class="form-select" id="gender">
-                <option value="">Prefer not to say</option>
-                <option value="female">Female</option>
-                <option value="male">Male</option>
-                <option value="non-binary">Non-binary</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-
-            <button type="button" class="btn btn-primary" style="width: 100%;" onclick="Views.nextOnboardingStep(2)">
-              Continue
-            </button>
-          </div>
-
-          <div id="step2" class="onboarding-step hidden">
-            <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">Reading Preferences</h3>
-
-            <div class="form-group">
-              <label class="form-label">What genres interest you? (Select all that apply)</label>
-              <div class="checkbox-group" id="genreCheckboxes">
-                <label class="checkbox-item">
-                  <input type="checkbox" value="self-help" /> Self-Help & Personal Development
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" value="business" /> Business & Career
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" value="psychology" /> Psychology
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" value="fiction" /> Fiction
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" value="biography" /> Biography & Memoir
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" value="health" /> Health & Wellness
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" value="creativity" /> Creativity & Arts
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" value="philosophy" /> Philosophy & Spirituality
-                </label>
-              </div>
-            </div>
-
-            <div style="display: flex; gap: 1rem;">
-              <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="Views.nextOnboardingStep(1)">
-                Back
-              </button>
-              <button type="button" class="btn btn-primary" style="flex: 1;" onclick="Views.nextOnboardingStep(3)">
-                Continue
-              </button>
-            </div>
-          </div>
-
-          <div id="step3" class="onboarding-step hidden">
-            <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">Your Goals</h3>
-
-            <div class="form-group">
-              <label class="form-label">What would you like to work on? (Select all that apply)</label>
-              <div class="checkbox-group" id="goalsCheckboxes">
-                <label class="checkbox-item">
-                  <input type="checkbox" value="focus" /> Improve focus and discipline
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" value="confidence" /> Boost confidence
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" value="anxiety" /> Reduce anxiety/stress
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" value="academic" /> Do better in school/studies
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" value="social" /> Develop social skills
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" value="career" /> Career and money
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" value="creativity" /> Creativity and passion
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" value="relationships" /> Improve relationships
-                </label>
-                <label class="checkbox-item">
-                  <input type="checkbox" value="health" /> Physical/mental health
-                </label>
-              </div>
-            </div>
-
-            <div style="display: flex; gap: 1rem;">
-              <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="Views.nextOnboardingStep(2)">
-                Back
-              </button>
-              <button type="button" class="btn btn-primary" style="flex: 1;" onclick="Views.completeOnboarding()">
-                Complete Setup
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
-    `;
-  },
 
       initOnboarding() {},
 
@@ -1091,16 +1099,23 @@
         const age = document.getElementById("age").value;
         const gender = document.getElementById("gender").value;
 
-        const genres = Array.from(document.querySelectorAll("#genreCheckboxes input:checked")).map((cb) => cb.value);
-        const goals = Array.from(document.querySelectorAll("#goalsCheckboxes input:checked")).map((cb) => cb.value);
+        const genres = Array.from(
+          document.querySelectorAll("#genreCheckboxes input:checked")
+        ).map((cb) => cb.value);
+        const goals = Array.from(
+          document.querySelectorAll("#goalsCheckboxes input:checked")
+        ).map((cb) => cb.value);
 
         if (!age || genres.length === 0 || goals.length === 0) {
-          Views.showModal("Please Complete All Steps", "Please make sure to enter your age and select at least one genre and one goal.");
+          Views.showModal(
+            "Please Complete All Steps",
+            "Please make sure to enter your age and select at least one genre and one goal."
+          );
           return;
         }
 
         const userData = {
-          age: parseInt(age),
+          age: parseInt(age, 10),
           gender,
           preferredGenres: genres,
           goals,
@@ -1189,12 +1204,17 @@
       },
 
       async submitCheckIn() {
-        const moodScore = parseInt(document.getElementById("moodSlider").value);
-        const selectedTags = Array.from(document.querySelectorAll(".mood-tag.selected")).map((tag) => tag.dataset.tag);
+        const moodScore = parseInt(document.getElementById("moodSlider").value, 10);
+        const selectedTags = Array.from(
+          document.querySelectorAll(".mood-tag.selected")
+        ).map((tag) => tag.dataset.tag);
         const freeText = document.getElementById("freeText").value.trim();
 
         if (selectedTags.length === 0) {
-          Views.showModal("Select Your Mood", "Please select at least one mood tag to help us understand how you're feeling.");
+          Views.showModal(
+            "Select Your Mood",
+            "Please select at least one mood tag to help us understand how you're feeling."
+          );
           return;
         }
 
@@ -1249,13 +1269,15 @@
           if (!user || !mood) {
             container.innerHTML = `
               <div style="text-align: center; padding: 2rem;">
-                <p style="color: var(--burgundy);">Missing user or mood data. Please complete onboarding and a mood check-in first.</p>
+                <p style="color: var(--burgundy);">
+                  Missing user or mood data. Please complete onboarding and a mood check-in first.
+                </p>
               </div>
             `;
             return;
           }
 
-          const response = await fetch(`${BACKEND_BASE_URL}/api/recommendations`, {
+          const response = await fetch(\`${BACKEND_BASE_URL}/api/recommendations\`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ user, mood }),
@@ -1388,7 +1410,8 @@ ${err.message || err}
             <div class="disclaimer mb-3">
               <strong>📚 About This Book:</strong><br />
               This book has been selected based on your current mood (${
-                AppState.currentMoodCheckIn && Array.isArray(AppState.currentMoodCheckIn.moodTags)
+                AppState.currentMoodCheckIn &&
+                Array.isArray(AppState.currentMoodCheckIn.moodTags)
                   ? AppState.currentMoodCheckIn.moodTags.join(", ")
                   : "your current mood"
               }) and your goals. The summary you'll read is AI-generated and focuses on the core ideas and practical insights.
@@ -1483,7 +1506,7 @@ ${err.message || err}
           `;
           progressFill.style.width = "25%";
 
-          const response = await fetch(`${BACKEND_BASE_URL}/api/summary`, {
+          const response = await fetch(\`${BACKEND_BASE_URL}/api/summary\`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ user, mood, book }),
@@ -1573,15 +1596,20 @@ ${err.message || err}
           .trim();
       },
 
-      // Full summary via browser TTS
       playBrowserTTS() {
         if (!AppState.currentSummary) {
-          Views.showModal("No Summary Available", "Please wait for the summary to finish generating first.");
+          Views.showModal(
+            "No Summary Available",
+            "Please wait for the summary to finish generating first."
+          );
           return;
         }
 
         if (!("speechSynthesis" in window)) {
-          Views.showModal("Not Supported", "Your browser does not support text-to-speech. Try a modern browser like Chrome, Edge, Safari, or Firefox.");
+          Views.showModal(
+            "Not Supported",
+            "Your browser does not support text-to-speech. Try a modern browser like Chrome, Edge, Safari, or Firefox."
+          );
           return;
         }
 
@@ -1600,13 +1628,18 @@ ${err.message || err}
 
         synth.speak(utterance);
 
-        Views.showModal("Reading Started", "Your browser is now reading the summary. Tap the button again to stop it.");
+        Views.showModal(
+          "Reading Started",
+          "Your browser is now reading the summary. Tap the button again to stop it."
+        );
       },
 
-      // Full summary via backend /tts (VoiceRSS behind the scenes)
       async generateAudioSummaryViaApi() {
         if (!AppState.currentSummary) {
-          Views.showModal("No Summary Available", "Please wait for the summary to finish generating first.");
+          Views.showModal(
+            "No Summary Available",
+            "Please wait for the summary to finish generating first."
+          );
           return;
         }
 
@@ -1646,7 +1679,7 @@ ${err.message || err}
         const plainText = Views._stripMarkdown(AppState.currentSummary);
 
         try {
-          const res = await fetch(`${BACKEND_BASE_URL}/tts`, {
+          const res = await fetch(\`${BACKEND_BASE_URL}/tts\`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ text: plainText }),
@@ -1692,7 +1725,10 @@ ${err.message || err}
       },
 
       markSummaryComplete() {
-        Views.showModal("Summary Completed! 🎉", "Nice work. The insights you've gained are now part of your reading journey.");
+        Views.showModal(
+          "Summary Completed! 🎉",
+          "Nice work. The insights you've gained are now part of your reading journey."
+        );
       },
 
       library() {
@@ -1788,7 +1824,9 @@ ${err.message || err}
               ${
                 authUser
                   ? `
-                <p style="margin-bottom: 0.5rem;"><strong>Signed in as:</strong> ${authUser.email || authUser.displayName || "Account"}</p>
+                <p style="margin-bottom: 0.5rem;"><strong>Signed in as:</strong> ${
+                  authUser.email || authUser.displayName || "Account"
+                }</p>
                 <p style="margin-bottom: 1rem; font-size: 0.9rem; opacity: 0.8;">
                   Your library and mood history are synced across devices when you're signed in.
                 </p>
@@ -1839,13 +1877,16 @@ ${err.message || err}
       },
 
       async clearMoodHistory() {
-        Views.showConfirmDialog("Are you sure you want to clear your mood history? This action cannot be undone.", async () => {
-          AppState.moodHistory = [];
-          Storage.removeItem("moodshelf_mood_history");
-          await BackendSync.clearMoodHistory();
-          Router.navigate("settings");
-          Views.showModal("History Cleared", "Your mood history has been cleared.");
-        });
+        Views.showConfirmDialog(
+          "Are you sure you want to clear your mood history? This action cannot be undone.",
+          async () => {
+            AppState.moodHistory = [];
+            Storage.removeItem("moodshelf_mood_history");
+            await BackendSync.clearMoodHistory();
+            Router.navigate("settings");
+            Views.showModal("History Cleared", "Your mood history has been cleared.");
+          }
+        );
       },
 
       resetApp() {
@@ -1970,10 +2011,25 @@ ${err.message || err}
         try {
           const provider = new firebase.auth.GoogleAuthProvider();
           await auth.signInWithPopup(provider);
+
           Views.closeAllModals();
-          Views.showModal("Signed In", "You're now signed in. Your shelf and mood history will sync across devices.");
+
+          // Give auth state + Firestore a brief moment to sync profile
+          await delay(100);
+
+          if (AppState.user) {
+            Router.navigate("check-in");
+          }
+
+          Views.showModal(
+            "Signed In",
+            "You're now signed in. Your shelf and mood history will sync across devices."
+          );
         } catch (err) {
-          Views.showModal("Sign-In Error", err.message || "Could not complete Google sign-in.");
+          Views.showModal(
+            "Sign-In Error",
+            err.message || "Could not complete Google sign-in."
+          );
         }
       },
 
@@ -1988,10 +2044,24 @@ ${err.message || err}
 
         try {
           await auth.signInWithEmailAndPassword(email, password);
+
           Views.closeAllModals();
-          Views.showModal("Signed In", "You're now signed in. Your shelf and mood history will sync across devices.");
+
+          await delay(100);
+
+          if (AppState.user) {
+            Router.navigate("check-in");
+          }
+
+          Views.showModal(
+            "Signed In",
+            "You're now signed in. Your shelf and mood history will sync across devices."
+          );
         } catch (err) {
-          Views.showModal("Sign-In Error", err.message || "Could not sign in with email and password.");
+          Views.showModal(
+            "Sign-In Error",
+            err.message || "Could not sign in with email and password."
+          );
         }
       },
 
@@ -2006,10 +2076,27 @@ ${err.message || err}
 
         try {
           await auth.createUserWithEmailAndPassword(email, password);
+
           Views.closeAllModals();
-          Views.showModal("Account Created", "Your account has been created and you're now signed in.");
+
+          // New users won't have a profile yet, so AppState.user will likely be null.
+          await delay(100);
+
+          if (AppState.user) {
+            Router.navigate("check-in");
+          } else if (AppState.currentView === "welcome") {
+            Router.navigate("onboarding");
+          }
+
+          Views.showModal(
+            "Account Created",
+            "Your account has been created and you're now signed in."
+          );
         } catch (err) {
-          Views.showModal("Sign-Up Error", err.message || "Could not create account.");
+          Views.showModal(
+            "Sign-Up Error",
+            err.message || "Could not create account."
+          );
         }
       },
 
@@ -2020,7 +2107,10 @@ ${err.message || err}
           Views.showModal("Signed Out", "You've been signed out on this device.");
           Router.navigate("settings");
         } catch (err) {
-          Views.showModal("Sign-Out Error", err.message || "Could not sign out.");
+          Views.showModal(
+            "Sign-Out Error",
+            err.message || "Could not sign out."
+          );
         }
       },
     };
