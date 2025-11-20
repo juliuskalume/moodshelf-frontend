@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
   <!-- Home -->
   <url>
     <loc>https://moodshelf.vercel.app/</loc>
@@ -7,27 +8,49 @@
     <priority>1.0</priority>
   </url>
 
-  <!-- Example static pages you may add -->
+  <!-- Static Pages -->
   <url>
     <loc>https://moodshelf.vercel.app/about</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>
+
   <url>
     <loc>https://moodshelf.vercel.app/privacy</loc>
     <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
+    <priority>0.5</priority>
   </url>
+
   <url>
     <loc>https://moodshelf.vercel.app/terms</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://moodshelf.vercel.app/contact</loc>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
 
-  <!-- Example SEO content pages (see section 6) -->
+  <!-- SEO Guides -->
   <url>
     <loc>https://moodshelf.vercel.app/guides/mood-reading</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.8</priority>
   </url>
+
+  <url>
+    <loc>https://moodshelf.vercel.app/guides/book-recommendation-ai</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Blog -->
+  <url>
+    <loc>https://moodshelf.vercel.app/blog/mood-based-reading-routines</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
 </urlset>
