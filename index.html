@@ -24,6 +24,25 @@
   <meta name="twitter:description" content="AI-powered mood-based reading companion. Check in with your mood and discover books that truly fit how you feel.">
   <meta name="twitter:image" content="https://moodshelf.vercel.app/og-image.png">
 
+  <!-- Schema.org JSON-LD: WebSite / Organization for homepage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "url": "https://moodshelf.vercel.app/",
+    "name": "MoodShelf",
+    "description": "MoodShelf is an AI-powered mood-based reading companion that helps you choose what to read next based on how you feel.",
+    "publisher": {
+      "@type": "Organization",
+      "name": "MoodShelf",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://moodshelf.vercel.app/icons/icon-192.png"
+      }
+    }
+  }
+  </script>
+  
   <!-- PWA / Icons (adjust if you already have these) -->
   <link rel="icon" href="/icons/icon-192.png">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
@@ -517,6 +536,79 @@
         .dark .disclaimer {
             background: linear-gradient(135deg, rgba(157, 78, 92, 0.15), rgba(107, 39, 55, 0.15));
         }
+
+      .site-footer {
+    padding: 2rem 1.5rem;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    font-size: 0.9rem;
+    background: var(--cream);
+}
+
+.dark .site-footer {
+    border-top-color: rgba(255,255,255,0.1);
+    background: var(--cream);
+}
+
+.footer-inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    justify-content: space-between;
+}
+
+.footer-brand {
+    max-width: 260px;
+}
+
+.footer-logo {
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--burgundy);
+}
+
+.footer-tagline {
+    margin-top: 0.25rem;
+    opacity: 0.8;
+}
+
+.footer-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.footer-column h3 {
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--burgundy);
+}
+
+.footer-column ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-column li {
+    margin-bottom: 0.25rem;
+}
+
+.footer-column a {
+    text-decoration: none;
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.footer-column a:hover {
+    opacity: 1;
+}
+
+.footer-bottom {
+    margin-top: 1.5rem;
+    text-align: center;
+    opacity: 0.7;
+    font-size: 0.8rem;
+}
     </style>
 </head>
 <body>
@@ -534,6 +626,48 @@
             <main id="mainContent" style="padding: 1.5rem; min-height: calc(100vh - 200px);">
                 <!-- Content injected by JS -->
             </main>
+
+            <!-- Site-wide footer -->
+            <footer class="site-footer">
+              <div class="footer-inner">
+                <div class="footer-brand">
+                  <a href="/" class="footer-logo">MoodShelf</a>
+                  <p class="footer-tagline">Mood-based reading companion.</p>
+                </div>
+
+                <nav class="footer-nav">
+                  <div class="footer-column">
+                    <h3>Product</h3>
+                    <ul>
+                      <li><a href="/">Home</a></li>
+                      <li><a href="/about">About</a></li>
+                      <li><a href="/contact">Contact</a></li>
+                    </ul>
+                  </div>
+
+                  <div class="footer-column">
+                    <h3>Guides</h3>
+                    <ul>
+                      <li><a href="/guides/mood-reading">Mood Reading Guide</a></li>
+                      <li><a href="/guides/book-recommendation-ai">AI Book Recommendations</a></li>
+                      <li><a href="/blog/mood-based-reading-routines">Mood-Based Reading Routine</a></li>
+                    </ul>
+                  </div>
+
+                  <div class="footer-column">
+                    <h3>Legal</h3>
+                    <ul>
+                      <li><a href="/privacy">Privacy Policy</a></li>
+                      <li><a href="/terms">Terms of Service</a></li>
+                    </ul>
+                  </div>
+                </nav>
+              </div>
+
+              <div class="footer-bottom">
+                <p>&copy; <span id="year"></span> MoodShelf. All rights reserved.</p>
+              </div>
+            </footer>
 
             <nav class="nav-bar" id="navBar" style="display: none;">
                 <div class="nav-item" data-view="check-in">
