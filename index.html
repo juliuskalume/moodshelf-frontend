@@ -943,128 +943,142 @@
         }
       },
 
-      onboarding() {
-        return `
-          <div style="max-width: 500px; margin: 0 auto;">
-            <h2 style="font-size: 2rem; margin-bottom: 1.5rem; color: var(--burgundy);">Let's Get to Know You</h2>
+       onboarding() {
+    return `
+      <div style="max-width: 500px; margin: 0 auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+          <h2 style="font-size: 2rem; color: var(--burgundy);">Let's Get to Know You</h2>
+          <button
+            type="button"
+            class="btn-ghost"
+            style="font-size: 0.85rem; text-decoration: underline; padding: 0; border: none; background: none;"
+            onclick="Views.showAuthModal()"
+          >
+            Already have an account?
+          </button>
+        </div>
 
-            <form id="onboardingForm" onsubmit="return false;">
-              <div id="step1" class="onboarding-step">
-                <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">Basic Information</h3>
+        <p style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 1.5rem;">
+          If you've used MoodShelf before, you can sign in to restore your profile and library.
+        </p>
 
-                <div class="form-group">
-                  <label class="form-label">Your Age *</label>
-                  <input type="number" class="form-input" id="age" min="13" max="120" required />
-                </div>
+        <form id="onboardingForm" onsubmit="return false;">
+          <div id="step1" class="onboarding-step">
+            <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">Basic Information</h3>
 
-                <div class="form-group">
-                  <label class="form-label">Gender (Optional)</label>
-                  <select class="form-select" id="gender">
-                    <option value="">Prefer not to say</option>
-                    <option value="female">Female</option>
-                    <option value="male">Male</option>
-                    <option value="non-binary">Non-binary</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
+            <div class="form-group">
+              <label class="form-label">Your Age *</label>
+              <input type="number" class="form-input" id="age" min="13" max="120" required />
+            </div>
 
-                <button type="button" class="btn btn-primary" style="width: 100%;" onclick="Views.nextOnboardingStep(2)">
-                  Continue
-                </button>
-              </div>
+            <div class="form-group">
+              <label class="form-label">Gender (Optional)</label>
+              <select class="form-select" id="gender">
+                <option value="">Prefer not to say</option>
+                <option value="female">Female</option>
+                <option value="male">Male</option>
+                <option value="non-binary">Non-binary</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
 
-              <div id="step2" class="onboarding-step hidden">
-                <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">Reading Preferences</h3>
-
-                <div class="form-group">
-                  <label class="form-label">What genres interest you? (Select all that apply)</label>
-                  <div class="checkbox-group" id="genreCheckboxes">
-                    <label class="checkbox-item">
-                      <input type="checkbox" value="self-help" /> Self-Help & Personal Development
-                    </label>
-                    <label class="checkbox-item">
-                      <input type="checkbox" value="business" /> Business & Career
-                    </label>
-                    <label class="checkbox-item">
-                      <input type="checkbox" value="psychology" /> Psychology
-                    </label>
-                    <label class="checkbox-item">
-                      <input type="checkbox" value="fiction" /> Fiction
-                    </label>
-                    <label class="checkbox-item">
-                      <input type="checkbox" value="biography" /> Biography & Memoir
-                    </label>
-                    <label class="checkbox-item">
-                      <input type="checkbox" value="health" /> Health & Wellness
-                    </label>
-                    <label class="checkbox-item">
-                      <input type="checkbox" value="creativity" /> Creativity & Arts
-                    </label>
-                    <label class="checkbox-item">
-                      <input type="checkbox" value="philosophy" /> Philosophy & Spirituality
-                    </label>
-                  </div>
-                </div>
-
-                <div style="display: flex; gap: 1rem;">
-                  <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="Views.nextOnboardingStep(1)">
-                    Back
-                  </button>
-                  <button type="button" class="btn btn-primary" style="flex: 1;" onclick="Views.nextOnboardingStep(3)">
-                    Continue
-                  </button>
-                </div>
-              </div>
-
-              <div id="step3" class="onboarding-step hidden">
-                <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">Your Goals</h3>
-
-                <div class="form-group">
-                  <label class="form-label">What would you like to work on? (Select all that apply)</label>
-                  <div class="checkbox-group" id="goalsCheckboxes">
-                    <label class="checkbox-item">
-                      <input type="checkbox" value="focus" /> Improve focus and discipline
-                    </label>
-                    <label class="checkbox-item">
-                      <input type="checkbox" value="confidence" /> Boost confidence
-                    </label>
-                    <label class="checkbox-item">
-                      <input type="checkbox" value="anxiety" /> Reduce anxiety/stress
-                    </label>
-                    <label class="checkbox-item">
-                      <input type="checkbox" value="academic" /> Do better in school/studies
-                    </label>
-                    <label class="checkbox-item">
-                      <input type="checkbox" value="social" /> Develop social skills
-                    </label>
-                    <label class="checkbox-item">
-                      <input type="checkbox" value="career" /> Career and money
-                    </label>
-                    <label class="checkbox-item">
-                      <input type="checkbox" value="creativity" /> Creativity and passion
-                    </label>
-                    <label class="checkbox-item">
-                      <input type="checkbox" value="relationships" /> Improve relationships
-                    </label>
-                    <label class="checkbox-item">
-                      <input type="checkbox" value="health" /> Physical/mental health
-                    </label>
-                  </div>
-                </div>
-
-                <div style="display: flex; gap: 1rem;">
-                  <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="Views.nextOnboardingStep(2)">
-                    Back
-                  </button>
-                  <button type="button" class="btn btn-primary" style="flex: 1;" onclick="Views.completeOnboarding()">
-                    Complete Setup
-                  </button>
-                </div>
-              </div>
-            </form>
+            <button type="button" class="btn btn-primary" style="width: 100%;" onclick="Views.nextOnboardingStep(2)">
+              Continue
+            </button>
           </div>
-        `;
-      },
+
+          <div id="step2" class="onboarding-step hidden">
+            <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">Reading Preferences</h3>
+
+            <div class="form-group">
+              <label class="form-label">What genres interest you? (Select all that apply)</label>
+              <div class="checkbox-group" id="genreCheckboxes">
+                <label class="checkbox-item">
+                  <input type="checkbox" value="self-help" /> Self-Help & Personal Development
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" value="business" /> Business & Career
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" value="psychology" /> Psychology
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" value="fiction" /> Fiction
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" value="biography" /> Biography & Memoir
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" value="health" /> Health & Wellness
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" value="creativity" /> Creativity & Arts
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" value="philosophy" /> Philosophy & Spirituality
+                </label>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem;">
+              <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="Views.nextOnboardingStep(1)">
+                Back
+              </button>
+              <button type="button" class="btn btn-primary" style="flex: 1;" onclick="Views.nextOnboardingStep(3)">
+                Continue
+              </button>
+            </div>
+          </div>
+
+          <div id="step3" class="onboarding-step hidden">
+            <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">Your Goals</h3>
+
+            <div class="form-group">
+              <label class="form-label">What would you like to work on? (Select all that apply)</label>
+              <div class="checkbox-group" id="goalsCheckboxes">
+                <label class="checkbox-item">
+                  <input type="checkbox" value="focus" /> Improve focus and discipline
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" value="confidence" /> Boost confidence
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" value="anxiety" /> Reduce anxiety/stress
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" value="academic" /> Do better in school/studies
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" value="social" /> Develop social skills
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" value="career" /> Career and money
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" value="creativity" /> Creativity and passion
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" value="relationships" /> Improve relationships
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" value="health" /> Physical/mental health
+                </label>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem;">
+              <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="Views.nextOnboardingStep(2)">
+                Back
+              </button>
+              <button type="button" class="btn btn-primary" style="flex: 1;" onclick="Views.completeOnboarding()">
+                Complete Setup
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    `;
+  },
 
       initOnboarding() {},
 
