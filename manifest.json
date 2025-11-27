@@ -1,6 +1,6 @@
 {
-  "name": "MoodShelf",
-  "short_name": "MoodShelf",
+  "name": "Sentira",
+  "short_name": "Sentira",
   "description": "Your mood-based reading companion with AI-powered book recommendations and summaries.",
   "start_url": "./index.html",
   "scope": "./",
