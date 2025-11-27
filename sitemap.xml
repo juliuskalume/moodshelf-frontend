@@ -3,52 +3,52 @@
 
   <!-- Home -->
   <url>
-    <loc>https://moodshelf.vercel.app/</loc>
+    <loc>https://sentira.vercel.app/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
 
   <!-- Static Pages -->
   <url>
-    <loc>https://moodshelf.vercel.app/about</loc>
+    <loc>https://sentira.vercel.app/about</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
-    <loc>https://moodshelf.vercel.app/privacy</loc>
+    <loc>https://sentira.vercel.app/privacy</loc>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
 
   <url>
-    <loc>https://moodshelf.vercel.app/terms</loc>
+    <loc>https://sentira.vercel.app/terms</loc>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
 
   <url>
-    <loc>https://moodshelf.vercel.app/contact</loc>
+    <loc>https://sentira.vercel.app/contact</loc>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
 
   <!-- SEO Guides -->
   <url>
-    <loc>https://moodshelf.vercel.app/guides/mood-reading</loc>
+    <loc>https://sentira.vercel.app/guides/mood-reading</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://moodshelf.vercel.app/guides/book-recommendation-ai</loc>
+    <loc>https://sentira.vercel.app/guides/book-recommendation-ai</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <!-- Blog -->
   <url>
-    <loc>https://moodshelf.vercel.app/blog/mood-based-reading-routines</loc>
+    <loc>https://sentira.vercel.app/blog/mood-based-reading-routines</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
