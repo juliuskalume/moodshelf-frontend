@@ -1,4 +1,4 @@
-const CACHE_NAME = "moodshelf-v1";
+const CACHE_NAME = "sentira-v1";
 
 // Files to cache for offline shell (update this list as needed)
 const APP_SHELL = [
@@ -37,7 +37,7 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
   // For your backend API calls, prefer network (so data is fresh)
-  if (url.origin.includes("moodshelf-backend.onrender.com")) {
+  if (url.origin.includes("sentira-backend.onrender.com")) {
     event.respondWith(
       fetch(event.request).catch(() => caches.match(event.request))
     );
@@ -49,7 +49,7 @@ self.addEventListener("fetch", (event) => {
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) return cachedResponse;
       return fetch(event.request).then((response) => {
-        // Don’t cache opaque / invalid responses
+        // Don't cache opaque / invalid responses
         if (!response || response.status !== 200) {
           return response;
         }
