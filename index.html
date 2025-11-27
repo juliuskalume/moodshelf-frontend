@@ -377,7 +377,7 @@
           padding: 1rem;
           margin-bottom: 0; /* spacing controlled by container gap */
           box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-          overflow: hidden; /* prevent children from flowing outside the rounded box */
+          overflow: ellipsis; /* prevent children from flowing outside the rounded box */
           transition: all 0.3s ease;
           cursor: pointer;
           animation: fadeInUp 0.5s ease-out;
@@ -404,8 +404,9 @@
 
       /* Clamp text to prevent extremely tall cards on larger screens */
     .book-desc.truncate {
-          overflow: hidden;
+          overflow: ellipsis;
           text-overflow: ellipsis;
+          overflow-wrap: anywhere;
           display: -webkit-box;
           -webkit-box-orient: vertical;
           -webkit-line-clamp: 6; /* default clamp */
