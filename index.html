@@ -1743,7 +1743,7 @@ ${err.message || err}
 
             <div class="disclaimer mb-3">
                 <strong>📚 About This Book:</strong><br>
-                This book has been selected based on your current mood (${AppState.currentMoodCheckIn && Array.isArray(AppState.currentMoodCheckIn.moodTags) ? AppState.currentMoodCheckIn.moodTags.join(", ") : "your current mood"}) and your goals. The summary you'll read is AI-generated and designed to give you the core ideas in a focused, concise way.
+                This book has been selected based on your current ${AppState.currentMoodCheckIn && Array.isArray(AppState.currentMoodCheckIn.moodTags) ? AppState.currentMoodCheckIn.moodTags.join(", ") : "your current mood"} mood and your goals. The summary you'll read is AI-generated and designed to give you the core ideas in a focused, concise way.
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 1rem;">
